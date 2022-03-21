@@ -4,7 +4,7 @@ progs = server_kqueue_nonblock
 
 all: ${progs}
 
-kqueue_impl.o: kqueue_impl.c kqueue_impl.h
+io_kqueue.o: io_kqueue.c io_kqueue.h
 
-server_kqueue_nonblock: server_kqueue_nonblock.o io_common.o kqueue_impl.o
-	${CC} ${CFLAGS} server_kqueue_nonblock.o io_common.o kqueue_impl.o ${LDFLAGS} -o $@
+server_kqueue_nonblock: server_kqueue_nonblock.o io_kqueue.o io_server.o io_common.o
+	${CC} ${CFLAGS} server_kqueue_nonblock.o io_kqueue.o io_server.o io_common.o ${LDFLAGS} -o $@

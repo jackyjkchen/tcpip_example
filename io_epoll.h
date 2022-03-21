@@ -1,7 +1,7 @@
 #ifndef _EPOLL_COMMON_H_
 #define _EPOLL_COMMON_H_
 
-#include "io_common.h"
+#include "io_server.h"
 
 #ifdef __cplusplus
 extern "C" {

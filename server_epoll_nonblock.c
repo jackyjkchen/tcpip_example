@@ -1,8 +1,8 @@
-#include "epoll_impl.h"
+#include "io_epoll.h"
 
 int main(int argc, char **argv)
 {
-    int listenfd, ret = 0;
+    int listenfd, ret;
 
     listenfd = server_socket_init(1);
     if (listenfd < 0) {

@@ -1,0 +1,10 @@
+*~
+*.a
+*.class
+*.dll
+*.exe
+*.o
+*.orig
+*.out
+*.rej
+*.so

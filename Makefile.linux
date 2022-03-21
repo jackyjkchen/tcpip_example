@@ -4,7 +4,7 @@ progs = server_epoll_nonblock
 
 all: ${progs}
 
-epoll_impl.o: epoll_impl.c epoll_impl.h
+io_epoll.o: io_epoll.c io_epoll.h
 
-server_epoll_nonblock: server_epoll_nonblock.o io_common.o epoll_impl.o
-	${CC} ${CFLAGS} server_epoll_nonblock.o io_common.o epoll_impl.o ${LDFLAGS} -o $@
+server_epoll_nonblock: server_epoll_nonblock.o io_epoll.o io_server.o io_common.o
+	${CC} ${CFLAGS} server_epoll_nonblock.o io_epoll.o io_server.o io_common.o ${LDFLAGS} -o $@
