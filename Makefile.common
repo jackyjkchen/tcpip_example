@@ -1,7 +1,7 @@
 CC ?= cc
 CXX ?= c++
-CFLAGS += -O2 -Wall -D__USE_XOPEN
-CXXFLAGS += -O2 -Wall -D__USE_XOPEN -pthread
+CFLAGS += -O2 -Wall -D_XOPEN_SOURCE
+CXXFLAGS += -O2 -Wall -D_XOPEN_SOURCE -pthread
 LDFLAGS += -s
 
 progs = client_loop client_thread server_poll_nonblock server_select_nonblock server_accept_block
