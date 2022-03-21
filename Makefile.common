@@ -1,0 +1,31 @@
+CC ?= cc
+CXX ?= c++
+CFLAGS += -O2 -Wall -D__USE_XOPEN
+CXXFLAGS += -O2 -Wall -D__USE_XOPEN -pthread
+LDFLAGS += -s
+
+progs = client_loop client_thread server_poll_nonblock server_select_nonblock server_accept_block
+
+all: ${progs}
+
+io_common.o: io_common.c io_common.h
+
+thread_pool.o: thread_pool.cpp thread_pool.h
+
+client_loop: client_loop.o io_common.o
+	${CC} ${CFLAGS} client_loop.o io_common.o ${LDFLAGS} -o $@
+
+client_thread: client_thread.o io_common.o thread_pool.o
+	${CXX} ${CXXFLAGS} client_thread.o io_common.o thread_pool.o ${LDFLAGS} -o $@
+
+server_poll_nonblock: server_poll_nonblock.o io_common.o
+	${CC} ${CFLAGS} server_poll_nonblock.o io_common.o ${LDFLAGS} -o $@
+
+server_select_nonblock: server_select_nonblock.o io_common.o
+	${CC} ${CFLAGS} server_select_nonblock.o io_common.o ${LDFLAGS} -o $@
+
+server_accept_block: server_accept_block.o io_common.o
+	${CC} ${CFLAGS} server_accept_block.o io_common.o ${LDFLAGS} -o $@
+
+clean: 
+	rm -rf *.o *_loop *_nonblock *_block *_thread

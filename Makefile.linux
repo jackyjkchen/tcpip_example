@@ -1,0 +1,10 @@
+include ./Makefile.common
+
+progs = server_epoll_nonblock
+
+all: ${progs}
+
+epoll_impl.o: epoll_impl.c epoll_impl.h
+
+server_epoll_nonblock: server_epoll_nonblock.o io_common.o epoll_impl.o
+	${CC} ${CFLAGS} server_epoll_nonblock.o io_common.o epoll_impl.o ${LDFLAGS} -o $@
