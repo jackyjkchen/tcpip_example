@@ -59,6 +59,7 @@ int kqueue_loop(int listenfd, server_callback svrcbk)
     }
 
     close(kq);
+    return 0;
 }
 
 #ifdef __cplusplus
