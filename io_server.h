@@ -1,6 +1,7 @@
 #ifndef _IO_SERVER_H_
 #define _IO_SERVER_H_
 
+#include <fcntl.h>
 #include "io_common.h"
 
 #define LISTENQ   1024

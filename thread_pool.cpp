@@ -198,7 +198,8 @@ int ThreadPool::get_cpu_num() {
 #elif defined(_SC_NPROCESSORS_ONLN)
     cpu_num = (int)sysconf(_SC_NPROCESSORS_ONLN);
 #else
-#error "Unsupported system, cannot get cpu count."
+#error "Cannot get cpu count, use cpu_num=1."
+    cpu_num = 1;
 #endif
     return cpu_num;
 }

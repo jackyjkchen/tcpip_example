@@ -1,4 +1,3 @@
-#include <sys/resource.h>
 #include "io_client.h"
 
 #ifdef __cplusplus

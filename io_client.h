@@ -1,6 +1,7 @@
 #ifndef _IO_CLIENT_H_
 #define _IO_CLIENT_H_
 
+#include <stdlib.h>
 #include "io_common.h"
 
 #ifdef __cplusplus

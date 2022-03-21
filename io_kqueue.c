@@ -1,4 +1,5 @@
 #include <sys/types.h>
+#include <sys/time.h>
 #include <sys/event.h>
 #include "io_kqueue.h"
 
