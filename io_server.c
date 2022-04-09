@@ -6,21 +6,29 @@ extern "C" {
 
 int server_socket_init(int nonblock)
 {
-    int listenfd;
+    SOCKET listenfd;
     int reuse_addr = 1;
     struct sockaddr_in server_addr;
+#ifdef _WIN32
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2,2), &wsaData) != 0) {
+        perror("WSAStartup failed");
+        return -1;
+    }
+#else
     if (set_rlimit() != 0) {
         perror("Set rlimit failed");
         return -1;
     }
+#endif
 
-    listenfd = socket(PF_INET, SOCK_STREAM, 0);
+    listenfd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (listenfd < 0) {
         perror("Create socket failed");
         return -1;
     }
 
-    if (setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &reuse_addr, sizeof(reuse_addr)) != 0) {
+    if (setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, (const char *)&reuse_addr, sizeof(reuse_addr)) != 0) {
         perror("Set SO_REUSEADDR failed");
         return -1;
     }
@@ -43,7 +51,12 @@ int server_socket_init(int nonblock)
     }
 
     if (nonblock) {
+#ifdef _WIN32
+        u_long iMode = 0;
+        if (ioctlsocket(listenfd, FIONBIO, &iMode) != NO_ERROR ) {
+#else
         if (fcntl(listenfd, F_SETFL, fcntl(listenfd, F_GETFL, 0) | O_NONBLOCK) < 0) {
+#endif
             close(listenfd);
             perror("Set nonblock failed");
             return -1;
@@ -56,18 +69,22 @@ int reflect_server_callback(void *param)
 {
     ssize_t n = 0;
     int ret = 0;
+#ifdef _WIN32
+    SOCKET connfd = (SOCKET)param;
+#else
     int connfd = (int)(long)param;
+#endif
     unsigned char buf[BUF_SIZE];
     while (1) {
-        n = readn(connfd, buf, BUF_SIZE);
-        if (n < 0 && errno != EWOULDBLOCK) {
+        n = recvn(connfd, buf, BUF_SIZE);
+        if (n < 0 && errno != EAGAIN) {
             perror("Recv failed");
             close(connfd);
             ret = -1;
             break;
         } else {
-            ssize_t w = writen(connfd, buf, n>=0?n:-n);
-            if (w < 0 && errno != EWOULDBLOCK) {
+            ssize_t w = sendn(connfd, buf, n>=0?n:-n);
+            if (w < 0 && errno != EAGAIN) {
                 perror("Send failed");
                 close(connfd);
                 ret = -1;

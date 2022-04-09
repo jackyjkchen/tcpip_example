@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-extern void accept_loop(int listenfd, server_callback svrcbk);
+extern void accept_loop(SOCKET listenfd, server_callback svrcbk);
 
 #ifdef __cplusplus
 }

@@ -1,7 +1,9 @@
 #ifndef _IO_SERVER_H_
 #define _IO_SERVER_H_
 
+#ifndef _WIN32
 #include <fcntl.h>
+#endif
 #include "io_common.h"
 
 #define LISTENQ   1024

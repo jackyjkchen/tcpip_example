@@ -4,9 +4,9 @@
 extern "C" {
 #endif
 
-void accept_loop(int listenfd, server_callback svrcbk)
+void accept_loop(SOCKET listenfd, server_callback svrcbk)
 {
-    int connfd;
+    SOCKET connfd;
     socklen_t client_addr_len;
     struct sockaddr_in client_addr;
 
@@ -17,7 +17,11 @@ void accept_loop(int listenfd, server_callback svrcbk)
             perror("Accept failed");
             continue;
         }
+#ifdef _WIN32
+        svrcbk((void*)connfd);
+#else
         svrcbk((void*)(long)connfd);
+#endif
     }
 }
 

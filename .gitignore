@@ -8,10 +8,3 @@
 *.out
 *.rej
 *.so
-client_loop
-client_thread
-server_accept_block
-server_epoll_nonblock
-server_kqueue_nonblock
-server_poll_nonblock
-server_select_nonblock

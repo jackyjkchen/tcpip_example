@@ -1,13 +1,19 @@
 all: common
 
 common:
-	+make -f Makefile.common
+	+make -f makefile.common
+
+unix:
+	+make -f makefile.unix
 
 linux:
-	+make -f Makefile.linux
+	+make -f makefile.linux
 
 bsd:
-	+make -f Makefile.bsd
+	+make -f makefile.bsd
+
+mingw:
+	+make -f makefile.mingw
 
 clean: 
-	+make -f Makefile.common clean
+	+make -f makefile.common clean

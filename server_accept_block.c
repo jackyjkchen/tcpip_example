@@ -2,7 +2,7 @@
 
 int main(int argc, char **argv)
 {
-    int listenfd, ret = 0;
+    SOCKET listenfd, ret = 0;
 
     listenfd = server_socket_init(0);
     if (listenfd < 0) {
