@@ -58,6 +58,10 @@ ssize_t sendn(SOCKET fd, const void *buf, size_t buf_size)
 }
 
 #ifndef _WIN32
+int closesocket(int fd) {
+    return close(fd);
+}
+
 int set_rlimit()
 {
     struct rlimit rl;

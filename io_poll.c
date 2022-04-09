@@ -5,9 +5,9 @@
 extern "C" {
 #endif
 
-void poll_loop(int listenfd, server_callback svrcbk)
+void poll_loop(SOCKET listenfd, server_callback svrcbk)
 {
-    int connfd, ready_num;
+    SOCKET connfd;
     int i = 0, maxi = 0;
     socklen_t client_addr_len;
     struct sockaddr_in client_addr;
@@ -20,7 +20,7 @@ void poll_loop(int listenfd, server_callback svrcbk)
     }
 
     for (;;) {
-        ready_num = poll(client, maxi + 1, -1);
+        int ready_num = poll(client, maxi + 1, -1);
         if (ready_num < 0) {
             perror("Poll failed");
         }
@@ -34,7 +34,7 @@ void poll_loop(int listenfd, server_callback svrcbk)
             }
 
             if (fcntl(connfd, F_SETFL, fcntl(connfd, F_GETFL, 0) | O_NONBLOCK) < 0) {
-                close(connfd);
+                closesocket(connfd);
                 perror("Set nonblock failed");
                 continue;
             }
@@ -47,7 +47,7 @@ void poll_loop(int listenfd, server_callback svrcbk)
             }
 
             if (i >= MAX_CONN) {
-                close(connfd);
+                closesocket(connfd);
                 puts("Too many clients.");
                 continue;
             }
@@ -74,7 +74,7 @@ void poll_loop(int listenfd, server_callback svrcbk)
                     break;
                 }
             } else if (client[i].revents & POLLERR) {
-                close(connfd);
+                closesocket(connfd);
                 client[i].fd = -1;
                 if (--ready_num <= 0) {
                     break;

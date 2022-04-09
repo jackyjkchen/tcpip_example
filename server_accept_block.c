@@ -11,6 +11,6 @@ int main(int argc, char **argv)
 
     accept_loop(listenfd, reflect_server_callback);
 
-    close(listenfd);
+    closesocket(listenfd);
     return ret;
 }

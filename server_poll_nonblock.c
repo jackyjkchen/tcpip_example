@@ -4,7 +4,7 @@
 
 int main(int argc, char **argv)
 {
-    int listenfd;
+    SOCKET listenfd;
 
     listenfd = server_socket_init(1);
     if (listenfd < 0) {
@@ -13,6 +13,6 @@ int main(int argc, char **argv)
 
     poll_loop(listenfd, reflect_server_callback);
 
-    close(listenfd);
+    closesocket(listenfd);
     return 0;
 }

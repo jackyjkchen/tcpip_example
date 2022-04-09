@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-extern int epoll_loop(int listenfd, server_callback svrcbk);
+extern int epoll_loop(SOCKET listenfd, server_callback svrcbk);
 
 #ifdef __cplusplus
 }

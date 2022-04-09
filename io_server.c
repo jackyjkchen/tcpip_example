@@ -39,25 +39,25 @@ int server_socket_init(int nonblock)
     server_addr.sin_port = htons(SERV_PORT);
 
     if (bind(listenfd, (const struct sockaddr *)&server_addr, sizeof(server_addr)) != 0) {
-        close(listenfd);
+        closesocket(listenfd);
         perror("Bind server_addr failed");
         return -1;
     }
 
     if (listen(listenfd, LISTENQ) != 0) {
-        close(listenfd);
+        closesocket(listenfd);
         perror("Listen port failed");
         return -1;
     }
 
     if (nonblock) {
 #ifdef _WIN32
-        u_long iMode = 0;
+        u_long iMode = 1;
         if (ioctlsocket(listenfd, FIONBIO, &iMode) != NO_ERROR ) {
 #else
         if (fcntl(listenfd, F_SETFL, fcntl(listenfd, F_GETFL, 0) | O_NONBLOCK) < 0) {
 #endif
-            close(listenfd);
+            closesocket(listenfd);
             perror("Set nonblock failed");
             return -1;
         }
@@ -79,20 +79,20 @@ int reflect_server_callback(void *param)
         n = recvn(connfd, buf, BUF_SIZE);
         if (n < 0 && errno != EAGAIN) {
             perror("Recv failed");
-            close(connfd);
+            closesocket(connfd);
             ret = -1;
             break;
         } else {
             ssize_t w = sendn(connfd, buf, n>=0?n:-n);
             if (w < 0 && errno != EAGAIN) {
                 perror("Send failed");
-                close(connfd);
+                closesocket(connfd);
                 ret = -1;
                 break;
             }
             if (n >= 0 && n != BUF_SIZE) {
                 shutdown(connfd, SHUT_WR);
-                close(connfd);
+                closesocket(connfd);
             }
         }
         if((n>=0?n:-n) != BUF_SIZE) {

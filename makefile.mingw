@@ -2,3 +2,12 @@ CC = x86_64-w64-mingw32-gcc
 CXX = x86_64-w64-mingw32-g++
 LDFLAGS = -lws2_32
 include ./makefile.common
+
+progs = server_WSAEventSelect_nonblock
+
+all: ${progs}
+
+io_WSAEventSelect.o: io_WSAEventSelect.c io_WSAEventSelect.h
+
+server_WSAEventSelect_nonblock: server_WSAEventSelect_nonblock.o io_WSAEventSelect.o io_server.o io_common.o
+	${CC} ${CFLAGS} server_WSAEventSelect_nonblock.o io_WSAEventSelect.o io_server.o io_common.o ${LDFLAGS} -o $@.exe

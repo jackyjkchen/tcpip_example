@@ -7,16 +7,17 @@
 extern "C" {
 #endif
 
-int kqueue_loop(int listenfd, server_callback svrcbk)
+int kqueue_loop(SOCKET listenfd, server_callback svrcbk)
 {
-    int connfd, ready_num, kq, i;
+    SOCKET connfd;
+    int kq, i;
     socklen_t client_addr_len;
     struct sockaddr_in client_addr;
     struct kevent kev, kev_list[MAX_CONN];
     struct timespec ts;
 
     if ((kq = kqueue()) < 0) {
-        close(listenfd);
+        closesocket(listenfd);
         perror("Create kqueue failed");
         return -1;
     }
@@ -26,7 +27,7 @@ int kqueue_loop(int listenfd, server_callback svrcbk)
     kevent(kq, &kev, 1, NULL, 0, &ts);
 
     for (;;) {
-        ready_num = kevent(kq, NULL, 0, kev_list, MAX_CONN, NULL);
+        int ready_num = kevent(kq, NULL, 0, kev_list, MAX_CONN, NULL);
         if (ready_num < 0) {
             perror("Kevent failed");
         }
@@ -40,25 +41,25 @@ int kqueue_loop(int listenfd, server_callback svrcbk)
                     continue;
                 }
                 if (fcntl(connfd, F_SETFL, fcntl(connfd, F_GETFL, 0) | O_NONBLOCK) < 0) {
-                    close(connfd);
+                    closesocket(connfd);
                     perror("Set nonblock failed");
                     continue;
                 }
                 EV_SET(&kev, connfd, EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, 0);
                 if (kevent(kq, &kev, 1, NULL, 0, NULL) != 0) {
-                    close(connfd);
+                    closesocket(connfd);
                     perror("Add kevent failed");
                     continue;
                 }
             } else if (kev_list[i].filter == EVFILT_READ) {
                 svrcbk((void*)(long)kev_list[i].ident);
             } else {
-                close(kev_list[i].ident);
+                closesocket(kev_list[i].ident);
             }
         }
     }
 
-    close(kq);
+    closesocket(kq);
     return 0;
 }
 

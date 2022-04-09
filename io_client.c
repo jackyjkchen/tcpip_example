@@ -64,7 +64,7 @@ void reflect_client_callback(void *param)
     } while(0);
 
     if (connfd > 0) {
-        close(connfd);
+        closesocket(connfd);
     }
 }
 

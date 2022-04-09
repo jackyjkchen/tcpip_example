@@ -2,7 +2,8 @@
 
 int main(int argc, char **argv)
 {
-    int listenfd, ret = 0;
+    SOCKET listenfd;
+    int ret = 0;
 
     listenfd = server_socket_init(1);
     if (listenfd < 0) {
@@ -11,6 +12,6 @@ int main(int argc, char **argv)
 
     ret = kqueue_loop(listenfd, reflect_server_callback);
 
-    close(listenfd);
+    closesocket(listenfd);
     return ret;
 }

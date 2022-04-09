@@ -33,7 +33,7 @@ void select_loop(SOCKET listenfd, server_callback svrcbk)
 
         if (FD_ISSET(listenfd, &rset)) {
 #ifdef _WIN32
-            u_long iMode = 0;
+            u_long iMode = 1;
 #endif
             client_addr_len = sizeof(client_addr);
             connfd = accept(listenfd, (struct sockaddr *)&client_addr, &client_addr_len);
@@ -47,7 +47,7 @@ void select_loop(SOCKET listenfd, server_callback svrcbk)
 #else
             if (fcntl(connfd, F_SETFL, fcntl(connfd, F_GETFL, 0) | O_NONBLOCK) < 0) {
 #endif
-                close(connfd);
+                closesocket(connfd);
                 perror("Set nonblock failed");
                 continue;
             }
@@ -60,7 +60,7 @@ void select_loop(SOCKET listenfd, server_callback svrcbk)
             }
 
             if (i >= MAX_CONN) {
-                close(connfd);
+                closesocket(connfd);
                 puts("Too many clients.");
                 continue;
             }

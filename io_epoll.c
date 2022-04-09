@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-int epoll_loop(int listenfd, server_callback svrcbk)
+int epoll_loop(SOCKET listenfd, server_callback svrcbk)
 {
     int epollfd, connfd, ready_num, i;
     socklen_t client_addr_len;
@@ -21,7 +21,7 @@ int epoll_loop(int listenfd, server_callback svrcbk)
 
     if (epoll_ctl(epollfd, EPOLL_CTL_ADD, listenfd, &ev) == -1) {
         perror("Epoll_ctl: listenfd failed");
-        close(epollfd);
+        closesocket(epollfd);
         return -1;
     }
 
@@ -40,25 +40,25 @@ int epoll_loop(int listenfd, server_callback svrcbk)
                     continue;
                 }
                 if (fcntl(connfd, F_SETFL, fcntl(connfd, F_GETFL, 0) | O_NONBLOCK) < 0) {
-                    close(connfd);
+                    closesocket(connfd);
                     perror("Set nonblock failed");
                     continue;
                 }
                 ev.events = EPOLLIN | EPOLLET;
                 ev.data.fd = connfd;
                 if (epoll_ctl(epollfd, EPOLL_CTL_ADD, connfd, &ev) == -1) {
-                    close(connfd);
+                    closesocket(connfd);
                     perror("Epoll_ctl: add connfd failed");
                     continue;
                 }
             } else if (events[i].events & EPOLLIN) {
                 svrcbk((void*)(long)events[i].data.fd);
             } else {
-                close(events[i].data.fd);
+                closesocket(events[i].data.fd);
             }
         }
     }
-    close(epollfd);
+    closesocket(epollfd);
     return 0;
 }
 

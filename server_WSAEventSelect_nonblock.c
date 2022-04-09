@@ -1,4 +1,4 @@
-#include "io_epoll.h"
+#include "io_WSAEventSelect.h"
 
 int main(int argc, char **argv)
 {
@@ -10,7 +10,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    ret = epoll_loop(listenfd, reflect_server_callback);
+    ret = WSAEventSelect_loop(listenfd, reflect_server_callback);
 
     closesocket(listenfd);
     return ret;

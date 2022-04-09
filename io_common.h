@@ -32,6 +32,7 @@ extern ssize_t recvn(SOCKET fd, void *buf, size_t buf_size);
 extern ssize_t sendn(SOCKET fd, const void *buf, size_t buf_size);
 
 #ifndef _WIN32
+extern int closesocket(int fd);
 extern int set_rlimit();
 #endif
 
