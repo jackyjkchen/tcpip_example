@@ -21,8 +21,6 @@ int WSAEventSelect_loop(SOCKET listenfd, server_callback svrcbk)
 {
     SOCKET connfd;
     int i = 0, event_total = 0;
-    socklen_t client_addr_len;
-    struct sockaddr_in client_addr;
     WSAEVENT events[WSA_MAXIMUM_WAIT_EVENTS];
     SOCKET sockets[WSA_MAXIMUM_WAIT_EVENTS];
 

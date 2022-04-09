@@ -9,8 +9,6 @@ void poll_loop(SOCKET listenfd, server_callback svrcbk)
 {
     SOCKET connfd;
     int i = 0, maxi = 0;
-    socklen_t client_addr_len;
-    struct sockaddr_in client_addr;
     struct pollfd client[MAX_CONN];
 
     client[0].fd = listenfd;
@@ -26,8 +24,7 @@ void poll_loop(SOCKET listenfd, server_callback svrcbk)
         }
 
         if (client[0].revents == POLLRDNORM) {
-            client_addr_len = sizeof(client_addr);
-            connfd = accept(listenfd, (struct sockaddr *)&client_addr, &client_addr_len);
+            connfd = accept(listenfd, NULL, NULL);
             if (connfd < 0) {
                 perror("Accept failed");
                 continue;

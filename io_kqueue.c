@@ -11,8 +11,6 @@ int kqueue_loop(SOCKET listenfd, server_callback svrcbk)
 {
     SOCKET connfd;
     int kq, i;
-    socklen_t client_addr_len;
-    struct sockaddr_in client_addr;
     struct kevent kev, kev_list[MAX_CONN];
     struct timespec ts;
 
@@ -34,8 +32,7 @@ int kqueue_loop(SOCKET listenfd, server_callback svrcbk)
 
         for (i=0; i<ready_num; i++) {
             if ((int)(kev_list[i].ident) == listenfd) {
-                client_addr_len = sizeof(client_addr);
-                connfd = accept(listenfd, (struct sockaddr *)&client_addr, &client_addr_len);
+                connfd = accept(listenfd, NULL, NULL);
                 if (connfd < 0) {
                     perror("Accept failed");
                     continue;

@@ -8,8 +8,6 @@ extern "C" {
 int epoll_loop(SOCKET listenfd, server_callback svrcbk)
 {
     int epollfd, connfd, ready_num, i;
-    socklen_t client_addr_len;
-    struct sockaddr_in client_addr;
     struct epoll_event ev, events[MAX_CONN];
     ev.events = EPOLLIN;
     ev.data.fd = listenfd;
@@ -33,8 +31,7 @@ int epoll_loop(SOCKET listenfd, server_callback svrcbk)
 
         for (i=0; i<ready_num; i++) {
             if (events[i].data.fd == listenfd) {
-                client_addr_len = sizeof(client_addr);
-                connfd = accept(listenfd, (struct sockaddr *)&client_addr, &client_addr_len);
+                connfd = accept(listenfd, NULL, NULL);
                 if (connfd < 0) {
                     perror("Accept failed");
                     continue;

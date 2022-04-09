@@ -13,8 +13,6 @@ void select_loop(SOCKET listenfd, server_callback svrcbk)
     SOCKET connfd, maxfd;
     int ready_num, client[MAX_CONN];
     int i = 0, maxi = -1;
-    socklen_t client_addr_len;
-    struct sockaddr_in client_addr;
     fd_set allset, rset;
 
     maxfd = listenfd;
@@ -35,8 +33,7 @@ void select_loop(SOCKET listenfd, server_callback svrcbk)
 #ifdef _WIN32
             u_long iMode = 1;
 #endif
-            client_addr_len = sizeof(client_addr);
-            connfd = accept(listenfd, (struct sockaddr *)&client_addr, &client_addr_len);
+            connfd = accept(listenfd, NULL, NULL);
             if (connfd < 0) {
                 perror("Accept failed");
                 continue;
