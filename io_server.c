@@ -110,10 +110,10 @@ int reflect_server_callback(void *param)
                 break;
             }
         }
-    }
-    if (io_context->recvbytes == BUF_SIZE && io_context->sendbytes == io_context->recvbytes) {
-        io_context->recvbytes = 0;
-        io_context->sendbytes = 0;
+        if (io_context->recvbytes == io_context->bufsize && io_context->sendbytes == io_context->recvbytes) {
+            io_context->recvbytes = 0;
+            io_context->sendbytes = 0;
+        }
     }
     return ret;
 }
