@@ -15,7 +15,7 @@ extern "C" {
 #define IO_SHUT_WR SD_SEND
 #define IO_EWOULDBLOCK WSAEWOULDBLOCK
 #define IO_EINTR WSAEINTR
-#define IO_ENOTCONN WSAENOTCONN
+#define MSG_NOSIGNAL 0
 #else
 #include <errno.h>
 #include <sys/socket.h>
@@ -27,7 +27,6 @@ typedef int SOCKET;
 #define IO_SHUT_WR SHUT_WR
 #define IO_EWOULDBLOCK EWOULDBLOCK
 #define IO_EINTR EINTR
-#define IO_ENOTCONN ENOTCONN
 #endif
 #define IO_OK 0
 

@@ -86,7 +86,7 @@ int reflect_server_callback(void *param)
             ssize_t w = 0;
             io_context->recvbytes += n;
             if (io_context->recvbytes - io_context->sendbytes > 0) {
-                w = send(fd, io_context->buf + io_context->sendbytes, io_context->recvbytes - io_context->sendbytes, 0);
+                w = send(fd, io_context->buf + io_context->sendbytes, io_context->recvbytes - io_context->sendbytes, MSG_NOSIGNAL);
             }
             if (w < 0) {
                 ret = -1;

@@ -37,8 +37,11 @@ void reflect_client_callback(void *param)
 {
     SOCKET connfd = 0;
     unsigned char buf[BUF_SIZE] = {0};
-    const char *s = "hello, world\n";
+    const char *str = "hello, world\n";
     struct sockaddr_in *pserver_addr = (struct sockaddr_in *)param;
+    ssize_t bufsize = strlen(str) + 1;
+    ssize_t recvbytes = 0;
+    ssize_t sendbytes = 0;
     do {
         SOCKET connfd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
         if (connfd < 0) {
@@ -51,14 +54,30 @@ void reflect_client_callback(void *param)
             break;
         }
 
-        if (send(connfd, s, strlen(s)+1, 0) < 0) {
-            perror("Send failed");
-        } else {
-            shutdown(connfd, IO_SHUT_WR);
-            if (recv(connfd, buf, BUF_SIZE, 0) < 0) {
-                perror("Recv failed");
+        while(1) {
+            int r = 0, w = 0;
+            if (recvbytes == sendbytes) {
+                w = send(connfd, buf + sendbytes, bufsize - sendbytes, MSG_NOSIGNAL);
+            }   
+            if (w < 0) {
+                perror("Send failed");
+                break;
             } else {
-                printf("%s", buf);
+                sendbytes += w;
+                if (sendbytes == BUF_SIZE) {
+                    shutdown(connfd, IO_SHUT_WR);
+                }
+                if ((r = recv(connfd, buf + recvbytes, bufsize - recvbytes, 0)) < 0) {
+                    perror("Recv failed");
+                    break;
+                } else {
+                    recvbytes += r;
+                    if (recvbytes >= bufsize) {
+                        shutdown(connfd, IO_SHUT_RD);
+                        printf("%s", buf);
+                        break;
+                    }
+                }
             }
         }
     } while(0);
