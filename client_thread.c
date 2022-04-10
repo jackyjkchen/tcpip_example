@@ -1,10 +1,11 @@
 #include "io_client.h"
-#include "thread_pool.h"
+#include "thread_pool_c.h"
 
 int main(int argc, char **argv)
 {
     int client_num, i;
     struct sockaddr_in server_addr;
+    struct THREADPOOL_CTX thrd_ctx;
 
     if (argc != 3) {
         printf("Please input server adderss and client num.");
@@ -21,12 +22,17 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    ThreadPool thpl(0);
-    thpl.init();
-    for (i=0; i<client_num; ++i) {
-        thpl.add_task(reflect_client_callback, &server_addr);
+    if (threadpool_init(&thrd_ctx, 0) != 0) {
+        perror("threadpool_init failed");
+        return -1;
     }
-    thpl.wait_all_thrd();
+
+    for (i=0; i<client_num; ++i) {
+        threadpool_addtask(&thrd_ctx, reflect_client_callback, &server_addr);
+    }
+
+    threadpool_waitallthrd(&thrd_ctx);
+    threadpool_clean(&thrd_ctx);
 
     return 0;
 }

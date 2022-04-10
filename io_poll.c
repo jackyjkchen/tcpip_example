@@ -7,23 +7,23 @@ extern "C" {
 
 void poll_loop(SOCKET listenfd, server_callback svrcbk)
 {
-    SOCKET connfd;
     int i = 0, maxi = 0;
-    struct pollfd client[MAX_CONN];
+    struct pollfd pollev[MAX_CONN];
 
-    client[0].fd = listenfd;
-    client[0].events = POLLRDNORM;
+    pollev[0].fd = listenfd;
+    pollev[0].events = POLLRDNORM;
     for (i=1; i<MAX_CONN; ++i) {
-        client[i].fd = -1;
+        pollev[i].fd = -1;
     }
 
     for (;;) {
-        int ready_num = poll(client, maxi + 1, -1);
+        SOCKET connfd;
+        int ready_num = poll(pollev, maxi + 1, -1);
         if (ready_num < 0) {
             perror("Poll failed");
         }
 
-        if (client[0].revents == POLLRDNORM) {
+        if (pollev[0].revents == POLLRDNORM) {
             connfd = accept(listenfd, NULL, NULL);
             if (connfd < 0) {
                 perror("Accept failed");
@@ -31,25 +31,27 @@ void poll_loop(SOCKET listenfd, server_callback svrcbk)
             }
 
             if (fcntl(connfd, F_SETFL, fcntl(connfd, F_GETFL, 0) | O_NONBLOCK) < 0) {
-                closesocket(connfd);
+                close_socket(connfd);
                 perror("Set nonblock failed");
                 continue;
             }
 
             for (i=0; i<MAX_CONN; ++i) {
-                if (client[i].fd < 0) {
-                    client[i].fd = connfd;
+                if (pollev[i].fd < 0) {
+                    pollev[i].fd = connfd;
                     break;
                 }
             }
 
+            alloc_io_context((void*)(long)connfd);
             if (i >= MAX_CONN) {
-                closesocket(connfd);
-                puts("Too many clients.");
+                close_socket(connfd);
+                free_io_context((void*)(long)(connfd));
+                perror("Too many client");
                 continue;
             }
 
-            client[i].events = POLLRDNORM;
+            pollev[i].events = POLLRDNORM;
             if (i > maxi) {
                 maxi = i;
             }
@@ -59,20 +61,23 @@ void poll_loop(SOCKET listenfd, server_callback svrcbk)
         }
 
         for (i=1; i<=maxi; ++i) {
-            if ((connfd = client[i].fd) < 0) {
+            if ((connfd = pollev[i].fd) < 0) {
                 continue;
             }
-            if (client[i].revents & POLLRDNORM) {
-                int ret = svrcbk((void*)(long)connfd);
-                if (ret != -2) {
-                    client[i].fd = -1;
+            io_context_t *io_context = get_io_context((void*)(long)(connfd));
+            if (pollev[i].revents & POLLRDNORM) {
+                if (svrcbk(io_context) < 0 && get_last_error() != IO_EWOULDBLOCK) {
+                    close_socket(connfd);
+                    free_io_context(io_context->fd);
+                    pollev[i].fd = -1;
                 }
                 if (--ready_num <= 0) {
                     break;
                 }
-            } else if (client[i].revents & POLLERR) {
-                closesocket(connfd);
-                client[i].fd = -1;
+            } else if (pollev[i].revents & POLLERR) {
+                close_socket(connfd);
+                free_io_context(io_context->fd);
+                pollev[i].fd = -1;
                 if (--ready_num <= 0) {
                     break;
                 }

@@ -39,13 +39,13 @@ int server_socket_init(int nonblock)
     server_addr.sin_port = htons(SERV_PORT);
 
     if (bind(listenfd, (const struct sockaddr *)&server_addr, sizeof(server_addr)) != 0) {
-        closesocket(listenfd);
+        close_socket(listenfd);
         perror("Bind server_addr failed");
         return -1;
     }
 
     if (listen(listenfd, LISTENQ) != 0) {
-        closesocket(listenfd);
+        close_socket(listenfd);
         perror("Listen port failed");
         return -1;
     }
@@ -57,7 +57,7 @@ int server_socket_init(int nonblock)
 #else
         if (fcntl(listenfd, F_SETFL, fcntl(listenfd, F_GETFL, 0) | O_NONBLOCK) < 0) {
 #endif
-            closesocket(listenfd);
+            close_socket(listenfd);
             perror("Set nonblock failed");
             return -1;
         }
@@ -67,40 +67,53 @@ int server_socket_init(int nonblock)
 
 int reflect_server_callback(void *param)
 {
-    ssize_t n = 0;
     int ret = 0;
+    io_context_t *io_context = (io_context_t *)param;
 #ifdef _WIN32
-    SOCKET connfd = (SOCKET)param;
+    SOCKET fd = (SOCKET)(io_context->fd);
 #else
-    int connfd = (int)(long)param;
+    SOCKET fd = (SOCKET)(long)(io_context->fd);
 #endif
-    unsigned char buf[BUF_SIZE];
-    while (1) {
-        n = recvn(connfd, buf, BUF_SIZE);
-        if (n < 0 && errno != EAGAIN) {
-            perror("Recv failed");
-            closesocket(connfd);
+    while(1) {
+        ssize_t n = 0;
+        if (io_context->recvbytes == io_context->sendbytes ) {
+            n = recv(fd, io_context->buf + io_context->recvbytes, io_context->bufsize - io_context->recvbytes, 0);
+            if (n == 0) {
+                shutdown(fd, IO_SHUT_RD);
+            }
+        }
+        if (n > 0) {
+            ssize_t w = 0;
+            io_context->recvbytes += n;
+            if (io_context->recvbytes - io_context->sendbytes > 0) {
+                w = send(fd, io_context->buf + io_context->sendbytes, io_context->recvbytes - io_context->sendbytes, 0);
+            }
+            if (w < 0) {
+                ret = -1;
+                break;
+            } else {
+                io_context->sendbytes += w;
+            }
+        } else if (n < 0) {
+            if (get_last_error() == IO_EINTR) {
+                continue;
+            }
             ret = -1;
             break;
         } else {
-            ssize_t w = sendn(connfd, buf, n>=0?n:-n);
-            if (w < 0 && errno != EAGAIN) {
-                perror("Send failed");
-                closesocket(connfd);
-                ret = -1;
+            if (io_context->sendbytes == io_context->recvbytes) {
+                int err = get_last_error();
+                if (err != IO_EWOULDBLOCK && get_last_error() != IO_OK) {
+                    ret = -1;
+                }
+                shutdown(fd, IO_SHUT_WR);
                 break;
             }
-            if (n >= 0 && n != BUF_SIZE) {
-                shutdown(connfd, SHUT_WR);
-                closesocket(connfd);
-            }
         }
-        if((n>=0?n:-n) != BUF_SIZE) {
-            if (n < 0) {
-                ret = -2;
-            }
-            break;
-        }
+    }
+    if (io_context->recvbytes == BUF_SIZE && io_context->sendbytes == io_context->recvbytes) {
+        io_context->recvbytes = 0;
+        io_context->sendbytes = 0;
     }
     return ret;
 }

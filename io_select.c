@@ -11,13 +11,14 @@ extern "C" {
 void select_loop(SOCKET listenfd, server_callback svrcbk)
 {
     SOCKET connfd, maxfd;
-    int ready_num, client[MAX_CONN];
+    ssize_t selfd[MAX_CONN];
+    int ready_num;
     int i = 0, maxi = -1;
     fd_set allset, rset;
 
     maxfd = listenfd;
     for (i=0; i<MAX_CONN; ++i) {
-        client[i] = -1;
+        selfd[i] = -1;
     }
     FD_ZERO(&allset);
     FD_SET(listenfd, &allset);
@@ -44,21 +45,32 @@ void select_loop(SOCKET listenfd, server_callback svrcbk)
 #else
             if (fcntl(connfd, F_SETFL, fcntl(connfd, F_GETFL, 0) | O_NONBLOCK) < 0) {
 #endif
-                closesocket(connfd);
+                close_socket(connfd);
                 perror("Set nonblock failed");
                 continue;
             }
 
             for (i=0; i<MAX_CONN; ++i) {
-                if (client[i] < 0) {
-                    client[i] = connfd;
+                if (selfd[i] < 0) {
+                    selfd[i] = connfd;
                     break;
                 }
+                printf("%d\n",i);
             }
 
+#ifdef _WIN32
+            alloc_io_context((void*)connfd);
+#else
+            alloc_io_context((void*)(long)connfd);
+#endif
             if (i >= MAX_CONN) {
-                closesocket(connfd);
-                puts("Too many clients.");
+                close_socket(connfd);
+#ifdef _WIN32
+                free_io_context((void*)(connfd));
+#else
+                free_io_context((void*)(long)(connfd));
+#endif
+                perror("Too many clients");
                 continue;
             }
 
@@ -75,18 +87,20 @@ void select_loop(SOCKET listenfd, server_callback svrcbk)
         }
 
         for (i=0; i<=maxi; ++i) {
-            if ((connfd = client[i]) < 0) {
+            if ((connfd = selfd[i]) < 0) {
                 continue;
             }
             if (FD_ISSET(connfd, &rset)) {
 #ifdef _WIN32
-                int ret = svrcbk((void*)connfd);
+                io_context_t *io_context = get_io_context((void*)(connfd));
 #else
-                int ret = svrcbk((void*)(long)connfd);
+                io_context_t *io_context = get_io_context((void*)(long)(connfd));
 #endif
-                if (ret != -2) {
+                if (svrcbk(io_context) < 0 && get_last_error() != IO_EWOULDBLOCK) {
                     FD_CLR(connfd, &allset);
-                    client[i] = -1;
+                    close_socket(connfd);
+                    free_io_context(io_context->fd);
+                    selfd[i] = -1;
                 }
                 if (--ready_num <= 0) {
                     break;

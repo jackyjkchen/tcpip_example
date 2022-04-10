@@ -9,13 +9,12 @@ extern "C" {
 
 int kqueue_loop(SOCKET listenfd, server_callback svrcbk)
 {
-    SOCKET connfd;
     int kq, i;
-    struct kevent kev, kev_list[MAX_CONN];
+    struct kevent kev, kevents[MAX_CONN];
     struct timespec ts;
 
     if ((kq = kqueue()) < 0) {
-        closesocket(listenfd);
+        close_socket(listenfd);
         perror("Create kqueue failed");
         return -1;
     }
@@ -25,38 +24,44 @@ int kqueue_loop(SOCKET listenfd, server_callback svrcbk)
     kevent(kq, &kev, 1, NULL, 0, &ts);
 
     for (;;) {
-        int ready_num = kevent(kq, NULL, 0, kev_list, MAX_CONN, NULL);
+        int ready_num = kevent(kq, NULL, 0, kevents, MAX_CONN, NULL);
         if (ready_num < 0) {
             perror("Kevent failed");
         }
 
         for (i=0; i<ready_num; i++) {
-            if ((int)(kev_list[i].ident) == listenfd) {
-                connfd = accept(listenfd, NULL, NULL);
+            io_context_t *io_context = get_io_context((void*)(long)(kevents[i].ident));
+            if ((int)(kevents[i].ident) == listenfd) {
+                SOCKET connfd = accept(listenfd, NULL, NULL);
                 if (connfd < 0) {
                     perror("Accept failed");
                     continue;
                 }
                 if (fcntl(connfd, F_SETFL, fcntl(connfd, F_GETFL, 0) | O_NONBLOCK) < 0) {
-                    closesocket(connfd);
+                    close_socket(connfd);
                     perror("Set nonblock failed");
                     continue;
                 }
                 EV_SET(&kev, connfd, EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, 0);
                 if (kevent(kq, &kev, 1, NULL, 0, NULL) != 0) {
-                    closesocket(connfd);
+                    close_socket(connfd);
                     perror("Add kevent failed");
                     continue;
                 }
-            } else if (kev_list[i].filter == EVFILT_READ) {
-                svrcbk((void*)(long)kev_list[i].ident);
+                alloc_io_context((void*)(long)connfd);
+            } else if (kevents[i].filter == EVFILT_READ) {
+                if (svrcbk(io_context) < 0 && get_last_error() != IO_EWOULDBLOCK) {
+                    close_socket(kevents[i].ident);
+                    free_io_context(io_context->fd);
+                }
             } else {
-                closesocket(kev_list[i].ident);
+                close_socket(kevents[i].ident);
+                free_io_context(io_context->fd);
             }
         }
     }
 
-    closesocket(kq);
+    close_socket(kq);
     return 0;
 }
 

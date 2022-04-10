@@ -4,22 +4,33 @@
 extern "C" {
 #endif
 
-void accept_loop(SOCKET listenfd, server_callback svrcbk)
+int accept_loop(SOCKET listenfd, server_callback svrcbk)
 {
-    SOCKET connfd;
-
+    io_context_t io_context;
+    io_context.fd = NULL;
+    io_context.buf = NULL;
+    io_context.bufsize = BUF_SIZE;
+    io_context.recvbytes = 0;
+    io_context.sendbytes = 0;
+    io_context.buf = malloc(io_context.bufsize);
+    if (io_context.buf == NULL) {
+        perror("alloc_io_context failed");
+        return -1;
+    }
     for (;;) {
-        connfd = accept(listenfd, NULL, NULL);
+        SOCKET connfd = accept(listenfd, NULL, NULL);
+#ifdef _WIN32
+        io_context.fd = (void *)connfd;
+#else
+        io_context.fd = (void *)(long)connfd;
+#endif
         if (connfd < 0) {
             perror("Accept failed");
             continue;
         }
-#ifdef _WIN32
-        svrcbk((void*)connfd);
-#else
-        svrcbk((void*)(long)connfd);
-#endif
+        svrcbk(&io_context);
     }
+    return 0;
 }
 
 #ifdef __cplusplus

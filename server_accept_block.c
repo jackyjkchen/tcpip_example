@@ -9,8 +9,8 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    accept_loop(listenfd, reflect_server_callback);
+    ret = accept_loop(listenfd, reflect_server_callback);
 
-    closesocket(listenfd);
+    close_socket(listenfd);
     return ret;
 }

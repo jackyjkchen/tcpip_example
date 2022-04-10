@@ -51,11 +51,11 @@ void reflect_client_callback(void *param)
             break;
         }
 
-        if (sendn(connfd, s, strlen(s)+1) < 0) {
+        if (send(connfd, s, strlen(s)+1, 0) < 0) {
             perror("Send failed");
         } else {
-            shutdown(connfd, SHUT_WR);
-            if (recvn(connfd, buf, BUF_SIZE) < 0) {
+            shutdown(connfd, IO_SHUT_WR);
+            if (recv(connfd, buf, BUF_SIZE, 0) < 0) {
                 perror("Recv failed");
             } else {
                 printf("%s", buf);
@@ -64,7 +64,7 @@ void reflect_client_callback(void *param)
     } while(0);
 
     if (connfd > 0) {
-        closesocket(connfd);
+        close_socket(connfd);
     }
 }
 

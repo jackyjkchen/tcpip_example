@@ -7,7 +7,7 @@ extern "C" {
 
 int epoll_loop(SOCKET listenfd, server_callback svrcbk)
 {
-    int epollfd, connfd, ready_num, i;
+    int epollfd;
     struct epoll_event ev, events[MAX_CONN];
     ev.events = EPOLLIN;
     ev.data.fd = listenfd;
@@ -19,43 +19,49 @@ int epoll_loop(SOCKET listenfd, server_callback svrcbk)
 
     if (epoll_ctl(epollfd, EPOLL_CTL_ADD, listenfd, &ev) == -1) {
         perror("Epoll_ctl: listenfd failed");
-        closesocket(epollfd);
+        close_socket(epollfd);
         return -1;
     }
 
     for (;;) {
-        ready_num = epoll_wait(epollfd, events, MAX_CONN, -1);
+        int ready_num = epoll_wait(epollfd, events, MAX_CONN, -1), i = 0;
         if (ready_num < 0) {
             perror("Epoll_wait failed");
         }
 
         for (i=0; i<ready_num; i++) {
+            io_context_t *io_context = get_io_context((void*)(long)(events[i].data.fd));
             if (events[i].data.fd == listenfd) {
-                connfd = accept(listenfd, NULL, NULL);
+                SOCKET connfd = accept(listenfd, NULL, NULL);
                 if (connfd < 0) {
                     perror("Accept failed");
                     continue;
                 }
                 if (fcntl(connfd, F_SETFL, fcntl(connfd, F_GETFL, 0) | O_NONBLOCK) < 0) {
-                    closesocket(connfd);
+                    close_socket(connfd);
                     perror("Set nonblock failed");
                     continue;
                 }
                 ev.events = EPOLLIN | EPOLLET;
                 ev.data.fd = connfd;
                 if (epoll_ctl(epollfd, EPOLL_CTL_ADD, connfd, &ev) == -1) {
-                    closesocket(connfd);
+                    close_socket(connfd);
                     perror("Epoll_ctl: add connfd failed");
                     continue;
                 }
+                alloc_io_context((void*)(long)connfd);
             } else if (events[i].events & EPOLLIN) {
-                svrcbk((void*)(long)events[i].data.fd);
+                if (svrcbk(io_context) < 0 && get_last_error() != IO_EWOULDBLOCK) {
+                    close_socket(events[i].data.fd);
+                    free_io_context(io_context->fd);
+                }
             } else {
-                closesocket(events[i].data.fd);
+                close_socket(events[i].data.fd);
+                free_io_context(io_context->fd);
             }
         }
     }
-    closesocket(epollfd);
+    close_socket(epollfd);
     return 0;
 }
 

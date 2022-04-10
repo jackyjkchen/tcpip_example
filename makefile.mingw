@@ -1,5 +1,7 @@
 CC = x86_64-w64-mingw32-gcc
 CXX = x86_64-w64-mingw32-g++
+CFLAGS ?= -O2 -Wall
+CXXFLAGS ?= ${CFLAGS} 
 LDFLAGS = -lws2_32
 include ./makefile.common
 
@@ -9,5 +11,5 @@ all: ${progs}
 
 io_WSAEventSelect.o: io_WSAEventSelect.c io_WSAEventSelect.h
 
-server_WSAEventSelect_nonblock: server_WSAEventSelect_nonblock.o io_WSAEventSelect.o io_server.o io_common.o
-	${CC} ${CFLAGS} server_WSAEventSelect_nonblock.o io_WSAEventSelect.o io_server.o io_common.o ${LDFLAGS} -o $@.exe
+server_WSAEventSelect_nonblock: server_WSAEventSelect_nonblock.o io_WSAEventSelect.o io_server.o io_context.o io_common.o
+	${CXX} ${CFLAGS} server_WSAEventSelect_nonblock.o io_WSAEventSelect.o io_server.o io_context.o io_common.o ${LDFLAGS} -o $@.exe
