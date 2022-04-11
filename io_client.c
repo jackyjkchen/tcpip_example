@@ -36,7 +36,7 @@ int client_socket_init(const char *straddr, struct sockaddr_in *pserver_addr) {
 void reflect_client_callback(void *param)
 {
     SOCKET connfd = 0;
-    unsigned char buf[BUF_SIZE] = {0};
+    char buf[BUF_SIZE] = {0};
     const char *str = "hello, world";
     struct sockaddr_in *pserver_addr = (struct sockaddr_in *)param;
     ssize_t bufsize = BUF_SIZE;
