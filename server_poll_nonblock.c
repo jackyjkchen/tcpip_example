@@ -2,11 +2,10 @@
 
 #define MAX_CONN  10240
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     SOCKET listenfd;
 
-    listenfd = server_socket_init(1);
+    listenfd = server_socket_init(TCP, 1);
     if (listenfd < 0) {
         return -1;
     }

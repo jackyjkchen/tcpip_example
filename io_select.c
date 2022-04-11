@@ -4,12 +4,7 @@
 #endif
 #include "io_select.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void select_loop(SOCKET listenfd, server_callback svrcbk)
-{
+void select_loop(SOCKET listenfd, server_callback svrcbk) {
     SOCKET connfd, maxfd;
     ssize_t selfd[MAX_CONN];
     int ready_num;
@@ -17,15 +12,15 @@ void select_loop(SOCKET listenfd, server_callback svrcbk)
     fd_set allset, rset;
 
     maxfd = listenfd;
-    for (i=0; i<MAX_CONN; ++i) {
+    for (i = 0; i < MAX_CONN; ++i) {
         selfd[i] = -1;
     }
     FD_ZERO(&allset);
     FD_SET(listenfd, &allset);
 
-    for (;;) {
+    while (1) {
         rset = allset;
-        ready_num = select(maxfd+1, &rset, NULL, NULL, NULL);
+        ready_num = select(maxfd + 1, &rset, NULL, NULL, NULL);
         if (ready_num < 0) {
             print_error("Select failed");
         }
@@ -39,9 +34,8 @@ void select_loop(SOCKET listenfd, server_callback svrcbk)
                 print_error("Accept failed");
                 continue;
             }
-
 #ifdef _WIN32
-            if (ioctlsocket(listenfd, FIONBIO, &iMode) != NO_ERROR ) {
+            if (ioctlsocket(listenfd, FIONBIO, &iMode) != NO_ERROR) {
 #else
             if (fcntl(connfd, F_SETFL, fcntl(connfd, F_GETFL, 0) | O_NONBLOCK) < 0) {
 #endif
@@ -50,7 +44,7 @@ void select_loop(SOCKET listenfd, server_callback svrcbk)
                 continue;
             }
 
-            for (i=0; i<MAX_CONN; ++i) {
+            for (i = 0; i < MAX_CONN; ++i) {
                 if (selfd[i] < 0) {
                     selfd[i] = connfd;
                     break;
@@ -58,22 +52,23 @@ void select_loop(SOCKET listenfd, server_callback svrcbk)
             }
 
 #ifdef _WIN32
-            alloc_io_context((void*)connfd);
+            alloc_io_context((void *)connfd);
 #else
-            alloc_io_context((void*)(long)connfd);
+            alloc_io_context((void *)(long)connfd);
 #endif
             if (i >= MAX_CONN) {
                 close_socket(connfd);
 #ifdef _WIN32
-                free_io_context((void*)(connfd));
+                free_io_context((void *)(connfd));
 #else
-                free_io_context((void*)(long)(connfd));
+                free_io_context((void *)(long)(connfd));
 #endif
                 print_error("Too many clients");
                 continue;
             }
 
             FD_SET(connfd, &allset);
+
             if (connfd > maxfd) {
                 maxfd = connfd;
             }
@@ -85,18 +80,19 @@ void select_loop(SOCKET listenfd, server_callback svrcbk)
             }
         }
 
-        for (i=0; i<=maxi; ++i) {
+        for (i = 0; i <= maxi; ++i) {
             if ((connfd = selfd[i]) < 0) {
                 continue;
             }
             if (FD_ISSET(connfd, &rset)) {
 #ifdef _WIN32
-                io_context_t *io_context = get_io_context((void*)(connfd));
+                io_context_t *io_context = get_io_context((void *)(connfd));
 #else
-                io_context_t *io_context = get_io_context((void*)(long)(connfd));
+                io_context_t *io_context = get_io_context((void *)(long)(connfd));
 #endif
                 if (svrcbk(io_context) < 0 && get_last_error() != IO_EWOULDBLOCK) {
                     FD_CLR(connfd, &allset);
+
                     close_socket(connfd);
                     free_io_context(io_context->fd);
                     selfd[i] = -1;
@@ -108,8 +104,3 @@ void select_loop(SOCKET listenfd, server_callback svrcbk)
         }
     }
 }
-
-#ifdef __cplusplus
-}
-#endif
-

@@ -1,13 +1,10 @@
 #include "io_client.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 int client_socket_init(const char *straddr, struct sockaddr_in *pserver_addr) {
 #ifdef _WIN32
     WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2,2), &wsaData) != 0) {
+
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
         print_error("WSAStartup failed");
         return -1;
     }
@@ -33,18 +30,19 @@ int client_socket_init(const char *straddr, struct sockaddr_in *pserver_addr) {
     return 0;
 }
 
-void reflect_client_callback(void *param)
-{
+void reflect_client_callback(void *param) {
     SOCKET connfd = 0;
-    char buf[BUF_SIZE] = {0};
+    char buf[BUF_SIZE] = { 0 };
     const char *str = "hello, world";
     struct sockaddr_in *pserver_addr = (struct sockaddr_in *)param;
     ssize_t bufsize = BUF_SIZE;
     ssize_t recvbytes = 0;
     ssize_t sendbytes = 0;
-    memcpy(buf, str, strlen(str)+1);
+
+    memcpy(buf, str, strlen(str) + 1);
     do {
-        SOCKET connfd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+        SOCKET connfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
         if (connfd < 0) {
             print_error("Create socket failed");
             break;
@@ -55,8 +53,9 @@ void reflect_client_callback(void *param)
             break;
         }
 
-        while(1) {
+        while (1) {
             int r = 0, w = 0;
+
             if (sendbytes < bufsize) {
                 w = send(connfd, buf + sendbytes, bufsize - sendbytes, MSG_NOSIGNAL);
             }
@@ -75,20 +74,15 @@ void reflect_client_callback(void *param)
                     recvbytes += r;
                     if (recvbytes >= bufsize) {
                         shutdown(connfd, IO_SHUT_RD);
-                        printf("send and recv: %ld bytes - string: %s\n", (long)(recvbytes), (char*)buf);
+                        printf("send and recv: %ld bytes - string: %s\n", (long)(recvbytes), buf);
                         break;
                     }
                 }
             }
         }
-    } while(0);
+    } while (0);
 
     if (connfd > 0) {
         close_socket(connfd);
     }
 }
-
-#ifdef __cplusplus
-}
-#endif
-

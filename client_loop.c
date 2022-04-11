@@ -1,7 +1,6 @@
 #include "io_client.h"
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     int client_num, i;
     struct sockaddr_in server_addr;
 
@@ -20,7 +19,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    for (i=0; i<client_num; ++i) {
+    for (i = 0; i < client_num; ++i) {
         reflect_client_callback(&server_addr);
     }
 

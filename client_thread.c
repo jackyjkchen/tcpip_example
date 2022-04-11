@@ -1,8 +1,7 @@
 #include "io_client.h"
 #include "thread_pool_c.h"
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     int client_num, i;
     struct sockaddr_in server_addr;
     struct THREADPOOL_CTX thrd_ctx;
@@ -27,7 +26,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    for (i=0; i<client_num; ++i) {
+    for (i = 0; i < client_num; ++i) {
         threadpool_addtask(&thrd_ctx, reflect_client_callback, &server_addr);
     }
 

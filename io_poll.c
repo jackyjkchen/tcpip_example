@@ -1,24 +1,20 @@
 #include <poll.h>
 #include "io_poll.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void poll_loop(SOCKET listenfd, server_callback svrcbk)
-{
+void poll_loop(SOCKET listenfd, server_callback svrcbk) {
     int i = 0, maxi = 0;
     struct pollfd pollev[MAX_CONN];
 
     pollev[0].fd = listenfd;
     pollev[0].events = POLLRDNORM;
-    for (i=1; i<MAX_CONN; ++i) {
+    for (i = 1; i < MAX_CONN; ++i) {
         pollev[i].fd = -1;
     }
 
-    for (;;) {
+    while (1) {
         SOCKET connfd;
         int ready_num = poll(pollev, maxi + 1, -1);
+
         if (ready_num < 0) {
             print_error("Poll failed");
         }
@@ -36,17 +32,17 @@ void poll_loop(SOCKET listenfd, server_callback svrcbk)
                 continue;
             }
 
-            for (i=0; i<MAX_CONN; ++i) {
+            for (i = 0; i < MAX_CONN; ++i) {
                 if (pollev[i].fd < 0) {
                     pollev[i].fd = connfd;
                     break;
                 }
             }
 
-            alloc_io_context((void*)(long)connfd);
+            alloc_io_context((void *)(long)connfd);
             if (i >= MAX_CONN) {
                 close_socket(connfd);
-                free_io_context((void*)(long)(connfd));
+                free_io_context((void *)(long)(connfd));
                 print_error("Too many client");
                 continue;
             }
@@ -60,12 +56,13 @@ void poll_loop(SOCKET listenfd, server_callback svrcbk)
             }
         }
 
-        for (i=1; i<=maxi; ++i) {
+        for (i = 1; i <= maxi; ++i) {
             io_context_t *io_context = NULL;
+
             if ((connfd = pollev[i].fd) < 0) {
                 continue;
             }
-            io_context = get_io_context((void*)(long)(connfd));
+            io_context = get_io_context((void *)(long)(connfd));
             if (pollev[i].revents & POLLRDNORM || pollev[i].revents & POLLWRNORM) {
                 if (svrcbk(io_context) < 0) {
                     if (get_last_error() != IO_EWOULDBLOCK) {
@@ -92,8 +89,3 @@ void poll_loop(SOCKET listenfd, server_callback svrcbk)
         }
     }
 }
-
-#ifdef __cplusplus
-}
-#endif
-

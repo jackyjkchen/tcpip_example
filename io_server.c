@@ -1,17 +1,14 @@
 #include "io_server.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-int server_socket_init(int nonblock)
-{
+int server_socket_init(int protocol, int nonblock) {
     SOCKET listenfd;
     int reuse_addr = 1;
     struct sockaddr_in server_addr;
+
 #ifdef _WIN32
     WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2,2), &wsaData) != 0) {
+
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
         print_error("WSAStartup failed");
         return -1;
     }
@@ -22,7 +19,14 @@ int server_socket_init(int nonblock)
     }
 #endif
 
-    listenfd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (protocol == TCP) {
+        listenfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    } else if (protocol == UDP) {
+        listenfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    } else {
+        fprintf(stderr, "Unsupport protocol");
+        return -1;
+    }
     if (listenfd < 0) {
         print_error("Create socket failed");
         return -1;
@@ -44,16 +48,19 @@ int server_socket_init(int nonblock)
         return -1;
     }
 
-    if (listen(listenfd, LISTENQ) != 0) {
-        close_socket(listenfd);
-        print_error("Listen port failed");
-        return -1;
+    if (protocol == TCP) {
+        if (listen(listenfd, LISTENQ) != 0) {
+            close_socket(listenfd);
+            print_error("Listen port failed");
+            return -1;
+        }
     }
 
     if (nonblock) {
 #ifdef _WIN32
         u_long iMode = 1;
-        if (ioctlsocket(listenfd, FIONBIO, &iMode) != NO_ERROR ) {
+
+        if (ioctlsocket(listenfd, FIONBIO, &iMode) != NO_ERROR) {
 #else
         if (fcntl(listenfd, F_SETFL, fcntl(listenfd, F_GETFL, 0) | O_NONBLOCK) < 0) {
 #endif
@@ -65,19 +72,20 @@ int server_socket_init(int nonblock)
     return listenfd;
 }
 
-int reflect_server_callback(void *param)
-{
+int reflect_server_callback(void *param) {
     int ret = 0;
     io_context_t *io_context = (io_context_t *)param;
+
 #ifdef _WIN32
     SOCKET fd = (SOCKET)(io_context->fd);
 #else
     SOCKET fd = (SOCKET)(long)(io_context->fd);
 #endif
     io_context->sendagain = 0;
-    while(1) {
+    while (1) {
         ssize_t n = 0;
-        if (io_context->recvbytes == io_context->sendbytes ) {
+
+        if (io_context->recvbytes == io_context->sendbytes) {
             n = recv(fd, io_context->buf + io_context->recvbytes, io_context->bufsize - io_context->recvbytes, 0);
             if (n == 0) {
                 shutdown(fd, IO_SHUT_RD);
@@ -85,12 +93,15 @@ int reflect_server_callback(void *param)
         }
         if (n > 0 || (n == 0 && io_context->recvbytes > io_context->sendbytes)) {
             ssize_t w = 0;
+
             io_context->recvbytes += n;
             if (io_context->recvbytes - io_context->sendbytes > 0) {
-                w = send(fd, io_context->buf + io_context->sendbytes, io_context->recvbytes - io_context->sendbytes, MSG_NOSIGNAL);
+                w = send(fd, io_context->buf + io_context->sendbytes,
+                         io_context->recvbytes - io_context->sendbytes, MSG_NOSIGNAL);
             }
             if (w < 0) {
                 int err = get_last_error();
+
                 if (err == IO_EINTR) {
                     continue;
                 } else if (err == IO_EWOULDBLOCK) {
@@ -103,6 +114,7 @@ int reflect_server_callback(void *param)
             }
         } else if (n < 0) {
             int err = get_last_error();
+
             if (err == IO_EINTR) {
                 continue;
             }
@@ -111,6 +123,7 @@ int reflect_server_callback(void *param)
         } else {
             if (io_context->sendbytes == io_context->recvbytes) {
                 int err = get_last_error();
+
                 if (err != IO_EWOULDBLOCK && err != IO_OK) {
                     ret = -1;
                 }
@@ -125,8 +138,3 @@ int reflect_server_callback(void *param)
     }
     return ret;
 }
-
-#ifdef __cplusplus
-}
-#endif
-

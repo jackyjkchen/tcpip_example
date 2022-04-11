@@ -7,7 +7,6 @@ extern "C" {
 #include <stdio.h>
 #include <string.h>
 
-#include <unistd.h>
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -17,6 +16,7 @@ extern "C" {
 #define IO_EINTR WSAEINTR
 #define MSG_NOSIGNAL 0
 #else
+#include <unistd.h>
 #include <errno.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -29,6 +29,9 @@ typedef int SOCKET;
 #define IO_EINTR EINTR
 #endif
 #define IO_OK 0
+
+#define TCP 0
+#define UDP 1
 
 #define SERV_PORT 9876
 #define BUF_SIZE  4096

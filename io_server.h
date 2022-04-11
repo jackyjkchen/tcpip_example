@@ -17,7 +17,7 @@ extern "C" {
 
 typedef int (*server_callback)(void *param);
 
-extern int server_socket_init(int nonblock);
+extern int server_socket_init(int protocol, int nonblock);
 
 extern int reflect_server_callback(void *param);
 

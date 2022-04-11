@@ -1,26 +1,22 @@
 #include "io_WSAEventSelect.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 static void free_event(int index, int *total, WSAEVENT *events) {
     int i = 0;
+
     WSACloseEvent(events[index]);
-    for (i=index; i<*total; i++) {
-        events[i] = events[i+1];
+    for (i = index; i < *total; i++) {
+        events[i] = events[i + 1];
     }
     events[i] = WSA_INVALID_EVENT;
     (*total)--;
 }
 
-int WSAEventSelect_loop(SOCKET listenfd, server_callback svrcbk)
-{
+int WSAEventSelect_loop(SOCKET listenfd, server_callback svrcbk) {
     SOCKET connfd;
     int i = 0, event_total = 0, ret = 0;
-    WSAEVENT events[WSA_MAXIMUM_WAIT_EVENTS] = {0};
+    WSAEVENT events[WSA_MAXIMUM_WAIT_EVENTS] = { 0 };
 
-	for (i=0; i<WSA_MAXIMUM_WAIT_EVENTS; i++) {
+    for (i = 0; i < WSA_MAXIMUM_WAIT_EVENTS; i++) {
         events[i] = WSA_INVALID_EVENT;
     }
 
@@ -35,13 +31,15 @@ int WSAEventSelect_loop(SOCKET listenfd, server_callback svrcbk)
     }
 
     alloc_io_context(events[event_total]);
-    get_io_context(events[event_total++])->fd = (void*)listenfd;
-    for (;;) {
+    get_io_context(events[event_total++])->fd = (void *)listenfd;
+    while (1) {
         WSANETWORKEVENTS network_event;
         int event_index = 0;
         WSAEVENT ev;
         io_context_t *io_context = NULL;
-        if ((event_index = WSAWaitForMultipleEvents(event_total, events, FALSE, WSA_INFINITE, FALSE)) == WSA_WAIT_FAILED) {
+
+        event_index = WSAWaitForMultipleEvents(event_total, events, FALSE, WSA_INFINITE, FALSE);
+        if (event_index == WSA_WAIT_FAILED) {
             print_error("WSAWaitForMultipleEvents failed");
             ret = -1;
             break;
@@ -57,6 +55,7 @@ int WSAEventSelect_loop(SOCKET listenfd, server_callback svrcbk)
 
         if (network_event.lNetworkEvents & FD_ACCEPT) {
             u_long iMode = 1;
+
             if (network_event.iErrorCode[FD_ACCEPT_BIT] != 0) {
                 fprintf(stderr, "FD_ACCEPT failed with error %d\n", network_event.iErrorCode[FD_ACCEPT_BIT]);
                 continue;
@@ -70,7 +69,7 @@ int WSAEventSelect_loop(SOCKET listenfd, server_callback svrcbk)
                 close_socket(connfd);
                 continue;
             }
-            if (ioctlsocket(connfd, FIONBIO, &iMode) != NO_ERROR ) {
+            if (ioctlsocket(connfd, FIONBIO, &iMode) != NO_ERROR) {
                 print_error("Set nonblock failed");
                 close_socket(connfd);
                 ret = -1;
@@ -89,7 +88,7 @@ int WSAEventSelect_loop(SOCKET listenfd, server_callback svrcbk)
                 break;
             }
             alloc_io_context(events[event_total]);
-            get_io_context(events[event_total++])->fd = (void*)connfd;
+            get_io_context(events[event_total++])->fd = (void *)connfd;
         } else if (network_event.lNetworkEvents & FD_READ || network_event.lNetworkEvents & FD_WRITE) {
             if (network_event.lNetworkEvents & FD_READ && network_event.iErrorCode[FD_READ_BIT] != 0) {
                 fprintf(stderr, "FD_READ failed with error %d\n", network_event.iErrorCode[FD_READ_BIT]);
@@ -99,7 +98,7 @@ int WSAEventSelect_loop(SOCKET listenfd, server_callback svrcbk)
                 fprintf(stderr, "FD_WRITE failed with error %d\n", network_event.iErrorCode[FD_WRITE_BIT]);
                 continue;
             }
-            if (svrcbk(io_context) < 0 ) {
+            if (svrcbk(io_context) < 0) {
                 if (get_last_error() != IO_EWOULDBLOCK) {
                     close_socket(connfd);
                     free_io_context(ev);
@@ -123,7 +122,3 @@ int WSAEventSelect_loop(SOCKET listenfd, server_callback svrcbk)
     WSACloseEvent(events[0]);
     return ret;
 }
-
-#ifdef __cplusplus
-}
-#endif

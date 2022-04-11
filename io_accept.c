@@ -1,12 +1,8 @@
 #include "io_select.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-int accept_loop(SOCKET listenfd, server_callback svrcbk)
-{
+int accept_loop(SOCKET listenfd, server_callback svrcbk) {
     io_context_t io_context;
+
     io_context.fd = NULL;
     io_context.buf = NULL;
     io_context.bufsize = BUF_SIZE;
@@ -17,8 +13,9 @@ int accept_loop(SOCKET listenfd, server_callback svrcbk)
         print_error("alloc_io_context failed");
         return -1;
     }
-    for (;;) {
+    while (1) {
         SOCKET connfd = accept(listenfd, NULL, NULL);
+
 #ifdef _WIN32
         io_context.fd = (void *)connfd;
 #else
@@ -32,8 +29,3 @@ int accept_loop(SOCKET listenfd, server_callback svrcbk)
     }
     return 0;
 }
-
-#ifdef __cplusplus
-}
-#endif
-
