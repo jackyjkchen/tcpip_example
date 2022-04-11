@@ -66,11 +66,17 @@ void poll_loop(SOCKET listenfd, server_callback svrcbk)
                 continue;
             }
             io_context = get_io_context((void*)(long)(connfd));
-            if (pollev[i].revents & POLLRDNORM) {
-                if (svrcbk(io_context) < 0 && get_last_error() != IO_EWOULDBLOCK) {
-                    close_socket(connfd);
-                    free_io_context(io_context->fd);
-                    pollev[i].fd = -1;
+            if (pollev[i].revents & POLLRDNORM || pollev[i].revents & POLLWRNORM) {
+                if (svrcbk(io_context) < 0) {
+                    if (get_last_error() != IO_EWOULDBLOCK) {
+                        close_socket(connfd);
+                        free_io_context(io_context->fd);
+                        pollev[i].fd = -1;
+                    } else if (io_context->sendagain) {
+                        pollev[i].events = POLLRDNORM | POLLWRNORM;
+                    }
+                } else if (pollev[i].events & POLLWRNORM) {
+                    pollev[i].events = POLLRDNORM;
                 }
                 if (--ready_num <= 0) {
                     break;

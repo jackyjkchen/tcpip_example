@@ -74,6 +74,7 @@ int reflect_server_callback(void *param)
 #else
     SOCKET fd = (SOCKET)(long)(io_context->fd);
 #endif
+    io_context->sendagain = 0;
     while(1) {
         ssize_t n = 0;
         if (io_context->recvbytes == io_context->sendbytes ) {
@@ -89,8 +90,11 @@ int reflect_server_callback(void *param)
                 w = send(fd, io_context->buf + io_context->sendbytes, io_context->recvbytes - io_context->sendbytes, MSG_NOSIGNAL);
             }
             if (w < 0) {
-                if (get_last_error() == IO_EINTR) {
+                int err = get_last_error();
+                if (err == IO_EINTR) {
                     continue;
+                } else if (err == IO_EWOULDBLOCK) {
+                    io_context->sendagain = 1;
                 }
                 ret = -1;
                 break;
@@ -98,7 +102,8 @@ int reflect_server_callback(void *param)
                 io_context->sendbytes += w;
             }
         } else if (n < 0) {
-            if (get_last_error() == IO_EINTR) {
+            int err = get_last_error();
+            if (err == IO_EINTR) {
                 continue;
             }
             ret = -1;

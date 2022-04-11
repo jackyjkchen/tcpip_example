@@ -40,6 +40,7 @@ void alloc_io_context(void *key) {
     io_context.bufsize = BUF_SIZE;
     io_context.recvbytes = 0;
     io_context.sendbytes = 0;
+    io_context.sendagain = 0;
     io_context.buf = malloc(io_context.bufsize);
     if (io_context.buf == NULL) {
         print_error("alloc_io_context failed");

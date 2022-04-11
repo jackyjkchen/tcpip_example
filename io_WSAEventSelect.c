@@ -41,7 +41,6 @@ int WSAEventSelect_loop(SOCKET listenfd, server_callback svrcbk)
         int event_index = 0;
         WSAEVENT ev;
         io_context_t *io_context = NULL;
-        SOCKET fd = INVALID_SOCKET;
         if ((event_index = WSAWaitForMultipleEvents(event_total, events, FALSE, WSA_INFINITE, FALSE)) == WSA_WAIT_FAILED) {
             print_error("WSAWaitForMultipleEvents failed");
             ret = -1;
@@ -49,8 +48,8 @@ int WSAEventSelect_loop(SOCKET listenfd, server_callback svrcbk)
         }
         ev = events[event_index - WSA_WAIT_EVENT_0];
         io_context = get_io_context(ev);
-        fd = (SOCKET)(io_context->fd);
-        if (WSAEnumNetworkEvents(fd, ev, &network_event) == SOCKET_ERROR) {
+        connfd = (SOCKET)(io_context->fd);
+        if (WSAEnumNetworkEvents(connfd, ev, &network_event) == SOCKET_ERROR) {
             print_error("WSAEnumnetwork_event failed");
             ret = -1;
             break;
@@ -62,7 +61,7 @@ int WSAEventSelect_loop(SOCKET listenfd, server_callback svrcbk)
                 fprintf(stderr, "FD_ACCEPT failed with error %d\n", network_event.iErrorCode[FD_ACCEPT_BIT]);
                 continue;
             }
-            if ((connfd = accept(fd, NULL, NULL)) == INVALID_SOCKET) {
+            if ((connfd = accept(listenfd, NULL, NULL)) == INVALID_SOCKET) {
                 print_error("accept failed");
                 continue;
             }
@@ -100,10 +99,14 @@ int WSAEventSelect_loop(SOCKET listenfd, server_callback svrcbk)
                 fprintf(stderr, "FD_WRITE failed with error %d\n", network_event.iErrorCode[FD_WRITE_BIT]);
                 continue;
             }
-            if (svrcbk(io_context) < 0 && get_last_error() != IO_EWOULDBLOCK) {
-                close_socket(fd);
-                free_io_context(ev);
-                free_event(event_index - WSA_WAIT_EVENT_0, &event_total, events);
+            if (svrcbk(io_context) < 0 ) {
+                if (get_last_error() != IO_EWOULDBLOCK) {
+                    close_socket(connfd);
+                    free_io_context(ev);
+                    free_event(event_index - WSA_WAIT_EVENT_0, &event_total, events);
+                } else if (io_context->sendagain) {
+                    continue;
+                }
             }
         }
         if (network_event.lNetworkEvents & FD_CLOSE) {
@@ -112,7 +115,7 @@ int WSAEventSelect_loop(SOCKET listenfd, server_callback svrcbk)
                 ret = -1;
                 break;
             }
-            close_socket(fd);
+            close_socket(connfd);
             free_io_context(ev);
             free_event(event_index - WSA_WAIT_EVENT_0, &event_total, events);
         }

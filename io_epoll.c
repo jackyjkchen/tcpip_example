@@ -50,10 +50,28 @@ int epoll_loop(SOCKET listenfd, server_callback svrcbk)
                     continue;
                 }
                 alloc_io_context((void*)(long)connfd);
-            } else if (events[i].events & EPOLLIN) {
-                if (svrcbk(io_context) < 0 && get_last_error() != IO_EWOULDBLOCK) {
-                    close_socket(events[i].data.fd);
-                    free_io_context(io_context->fd);
+            } else if (events[i].events & EPOLLIN || events[i].events & EPOLLOUT) {
+                if (svrcbk(io_context) < 0) {
+                    if (get_last_error() != IO_EWOULDBLOCK) {
+                        close_socket(events[i].data.fd);
+                        free_io_context(io_context->fd);
+                    } else if (io_context->sendagain && !(events[i].events & EPOLLOUT)) {
+                        ev.events = EPOLLIN | EPOLLOUT | EPOLLET;
+                        ev.data.fd = events[i].data.fd;
+                        if (epoll_ctl(epollfd, EPOLL_CTL_MOD, events[i].data.fd, &ev) == -1) {
+                            close_socket(events[i].data.fd);
+                            free_io_context(io_context->fd);
+                            print_error("Epoll_ctl: mod connfd failed");
+                        }
+                    }
+                } else if (events[i].events & EPOLLOUT) {
+                    ev.events = EPOLLIN | EPOLLET;
+                    ev.data.fd = events[i].data.fd;
+                    if (epoll_ctl(epollfd, EPOLL_CTL_MOD, events[i].data.fd, &ev) == -1) {
+                        close_socket(events[i].data.fd);
+                        free_io_context(io_context->fd);
+                        print_error("Epoll_ctl: mod connfd failed");
+                    }
                 }
             } else {
                 close_socket(events[i].data.fd);

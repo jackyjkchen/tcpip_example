@@ -57,7 +57,7 @@ void reflect_client_callback(void *param)
 
         while(1) {
             int r = 0, w = 0;
-            if (recvbytes == sendbytes) {
+            if (sendbytes < bufsize) {
                 w = send(connfd, buf + sendbytes, bufsize - sendbytes, MSG_NOSIGNAL);
             }
             if (w < 0) {
@@ -65,7 +65,7 @@ void reflect_client_callback(void *param)
                 break;
             } else {
                 sendbytes += w;
-                if (sendbytes == BUF_SIZE) {
+                if (sendbytes == bufsize) {
                     shutdown(connfd, IO_SHUT_WR);
                 }
                 if ((r = recv(connfd, buf + recvbytes, bufsize - recvbytes, 0)) < 0) {
