@@ -1,6 +1,6 @@
 CC = x86_64-w64-mingw32-gcc
 CXX = x86_64-w64-mingw32-g++
-CFLAGS ?= -O2 -Wall
+CFLAGS ?= -O2 -Wall -pipe
 CXXFLAGS ?= ${CFLAGS} 
 LDFLAGS = -lws2_32
 include ./makefile.common

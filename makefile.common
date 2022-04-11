@@ -1,8 +1,8 @@
 CC ?= cc
 CXX ?= c++
-CFLAGS ?= -O2 -Wall -Wl,--as-needed -pthread
+CFLAGS ?= -O2 -Wall -pipe -pthread
 CXXFLAGS ?= ${CFLAGS} 
-LDFLAGS ?=
+LDFLAGS ?= -Wl,--as-needed
 
 progs = client_loop client_thread server_select_nonblock server_accept_block
 

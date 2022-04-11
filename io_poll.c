@@ -61,10 +61,11 @@ void poll_loop(SOCKET listenfd, server_callback svrcbk)
         }
 
         for (i=1; i<=maxi; ++i) {
+            io_context_t *io_context = NULL;
             if ((connfd = pollev[i].fd) < 0) {
                 continue;
             }
-            io_context_t *io_context = get_io_context((void*)(long)(connfd));
+            io_context = get_io_context((void*)(long)(connfd));
             if (pollev[i].revents & POLLRDNORM) {
                 if (svrcbk(io_context) < 0 && get_last_error() != IO_EWOULDBLOCK) {
                     close_socket(connfd);

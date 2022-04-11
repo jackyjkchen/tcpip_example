@@ -57,8 +57,13 @@ void free_io_context(void *key) {
     io_context_map &ctx_map = get_map_inst();
     const io_context_map::iterator &i = ctx_map.find(key);
     if (i != ctx_map.end()) {
-        free(i->second.buf);
-        i->second.buf = NULL;
+#ifdef MAP_HAVE_SECOND
+        io_context_t &value = i->second;
+#else
+        io_context_t &value = ctx_map[key];
+#endif
+        free(value.buf);
+        value.buf = NULL;
         ctx_map.erase(key);
     }
 }
@@ -68,7 +73,11 @@ io_context_t *get_io_context(void *key) {
     io_context_t *ret = NULL;
     const io_context_map::iterator &i = ctx_map.find(key);
     if (i != ctx_map.end()) {
+#ifdef MAP_HAVE_SECOND
         ret = &i->second;
+#else
+        ret = &ctx_map[key];
+#endif
     }
     return ret;
 }
