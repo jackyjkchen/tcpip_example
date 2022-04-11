@@ -24,6 +24,22 @@ int get_last_error() {
 #endif
 }
 
+void print_error(const char *msg) {
+#ifdef _WIN32
+    char msgbuf[256] = {0};
+    FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+               NULL,
+               WSAGetLastError(),
+               MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
+               msgbuf,
+               sizeof(msgbuf),
+               NULL);
+    fprintf(stderr, "%s: %s\n", msg, msgbuf);
+#else
+    perror(msg);
+#endif
+}
+
 #ifndef _WIN32
 int set_rlimit()
 {

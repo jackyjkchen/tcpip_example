@@ -8,13 +8,13 @@ int main(int argc, char **argv)
     struct THREADPOOL_CTX thrd_ctx;
 
     if (argc != 3) {
-        printf("Please input server adderss and client num.");
+        fprintf(stderr, "Please input server adderss and client num.");
         return -1;
     }
 
     client_num = strtol(argv[2], (char **)NULL, 10);
     if (client_num <= 0) {
-        perror("invalid client num");
+        print_error("invalid client num");
         return -1;
     }
 
@@ -23,7 +23,7 @@ int main(int argc, char **argv)
     }
 
     if (threadpool_init(&thrd_ctx, 0) != 0) {
-        perror("threadpool_init failed");
+        print_error("threadpool_init failed");
         return -1;
     }
 

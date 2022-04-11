@@ -12,24 +12,24 @@ int server_socket_init(int nonblock)
 #ifdef _WIN32
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2,2), &wsaData) != 0) {
-        perror("WSAStartup failed");
+        print_error("WSAStartup failed");
         return -1;
     }
 #else
     if (set_rlimit() != 0) {
-        perror("Set rlimit failed");
+        print_error("Set rlimit failed");
         return -1;
     }
 #endif
 
     listenfd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (listenfd < 0) {
-        perror("Create socket failed");
+        print_error("Create socket failed");
         return -1;
     }
 
     if (setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, (const char *)&reuse_addr, sizeof(reuse_addr)) != 0) {
-        perror("Set SO_REUSEADDR failed");
+        print_error("Set SO_REUSEADDR failed");
         return -1;
     }
 
@@ -40,13 +40,13 @@ int server_socket_init(int nonblock)
 
     if (bind(listenfd, (const struct sockaddr *)&server_addr, sizeof(server_addr)) != 0) {
         close_socket(listenfd);
-        perror("Bind server_addr failed");
+        print_error("Bind server_addr failed");
         return -1;
     }
 
     if (listen(listenfd, LISTENQ) != 0) {
         close_socket(listenfd);
-        perror("Listen port failed");
+        print_error("Listen port failed");
         return -1;
     }
 
@@ -58,7 +58,7 @@ int server_socket_init(int nonblock)
         if (fcntl(listenfd, F_SETFL, fcntl(listenfd, F_GETFL, 0) | O_NONBLOCK) < 0) {
 #endif
             close_socket(listenfd);
-            perror("Set nonblock failed");
+            print_error("Set nonblock failed");
             return -1;
         }
     }
@@ -82,13 +82,16 @@ int reflect_server_callback(void *param)
                 shutdown(fd, IO_SHUT_RD);
             }
         }
-        if (n > 0) {
+        if (n > 0 || (n == 0 && io_context->recvbytes > io_context->sendbytes)) {
             ssize_t w = 0;
             io_context->recvbytes += n;
             if (io_context->recvbytes - io_context->sendbytes > 0) {
                 w = send(fd, io_context->buf + io_context->sendbytes, io_context->recvbytes - io_context->sendbytes, MSG_NOSIGNAL);
             }
             if (w < 0) {
+                if (get_last_error() == IO_EINTR) {
+                    continue;
+                }
                 ret = -1;
                 break;
             } else {
@@ -103,7 +106,7 @@ int reflect_server_callback(void *param)
         } else {
             if (io_context->sendbytes == io_context->recvbytes) {
                 int err = get_last_error();
-                if (err != IO_EWOULDBLOCK && get_last_error() != IO_OK) {
+                if (err != IO_EWOULDBLOCK && err != IO_OK) {
                     ret = -1;
                 }
                 shutdown(fd, IO_SHUT_WR);

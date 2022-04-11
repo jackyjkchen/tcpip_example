@@ -27,7 +27,7 @@ void select_loop(SOCKET listenfd, server_callback svrcbk)
         rset = allset;
         ready_num = select(maxfd+1, &rset, NULL, NULL, NULL);
         if (ready_num < 0) {
-            perror("Select failed");
+            print_error("Select failed");
         }
 
         if (FD_ISSET(listenfd, &rset)) {
@@ -36,7 +36,7 @@ void select_loop(SOCKET listenfd, server_callback svrcbk)
 #endif
             connfd = accept(listenfd, NULL, NULL);
             if (connfd < 0) {
-                perror("Accept failed");
+                print_error("Accept failed");
                 continue;
             }
 
@@ -46,7 +46,7 @@ void select_loop(SOCKET listenfd, server_callback svrcbk)
             if (fcntl(connfd, F_SETFL, fcntl(connfd, F_GETFL, 0) | O_NONBLOCK) < 0) {
 #endif
                 close_socket(connfd);
-                perror("Set nonblock failed");
+                print_error("Set nonblock failed");
                 continue;
             }
 
@@ -55,7 +55,6 @@ void select_loop(SOCKET listenfd, server_callback svrcbk)
                     selfd[i] = connfd;
                     break;
                 }
-                printf("%d\n",i);
             }
 
 #ifdef _WIN32
@@ -70,7 +69,7 @@ void select_loop(SOCKET listenfd, server_callback svrcbk)
 #else
                 free_io_context((void*)(long)(connfd));
 #endif
-                perror("Too many clients");
+                print_error("Too many clients");
                 continue;
             }
 

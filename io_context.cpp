@@ -42,7 +42,7 @@ void alloc_io_context(void *key) {
     io_context.sendbytes = 0;
     io_context.buf = malloc(io_context.bufsize);
     if (io_context.buf == NULL) {
-        perror("alloc_io_context failed");
+        print_error("alloc_io_context failed");
         abort();
     }
     memset(io_context.buf, 0x00, io_context.bufsize);

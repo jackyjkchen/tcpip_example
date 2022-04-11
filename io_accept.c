@@ -14,7 +14,7 @@ int accept_loop(SOCKET listenfd, server_callback svrcbk)
     io_context.sendbytes = 0;
     io_context.buf = malloc(io_context.bufsize);
     if (io_context.buf == NULL) {
-        perror("alloc_io_context failed");
+        print_error("alloc_io_context failed");
         return -1;
     }
     for (;;) {
@@ -25,7 +25,7 @@ int accept_loop(SOCKET listenfd, server_callback svrcbk)
         io_context.fd = (void *)(long)connfd;
 #endif
         if (connfd < 0) {
-            perror("Accept failed");
+            print_error("Accept failed");
             continue;
         }
         svrcbk(&io_context);

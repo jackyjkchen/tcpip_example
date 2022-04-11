@@ -20,19 +20,19 @@ void poll_loop(SOCKET listenfd, server_callback svrcbk)
         SOCKET connfd;
         int ready_num = poll(pollev, maxi + 1, -1);
         if (ready_num < 0) {
-            perror("Poll failed");
+            print_error("Poll failed");
         }
 
         if (pollev[0].revents == POLLRDNORM) {
             connfd = accept(listenfd, NULL, NULL);
             if (connfd < 0) {
-                perror("Accept failed");
+                print_error("Accept failed");
                 continue;
             }
 
             if (fcntl(connfd, F_SETFL, fcntl(connfd, F_GETFL, 0) | O_NONBLOCK) < 0) {
                 close_socket(connfd);
-                perror("Set nonblock failed");
+                print_error("Set nonblock failed");
                 continue;
             }
 
@@ -47,7 +47,7 @@ void poll_loop(SOCKET listenfd, server_callback svrcbk)
             if (i >= MAX_CONN) {
                 close_socket(connfd);
                 free_io_context((void*)(long)(connfd));
-                perror("Too many client");
+                print_error("Too many client");
                 continue;
             }
 

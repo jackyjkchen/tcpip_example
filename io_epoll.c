@@ -13,12 +13,12 @@ int epoll_loop(SOCKET listenfd, server_callback svrcbk)
     ev.data.fd = listenfd;
 
     if ((epollfd = epoll_create(MAX_CONN)) < 0) {
-        perror("Create epoll failed");
+        print_error("Create epoll failed");
         return -1;
     }
 
     if (epoll_ctl(epollfd, EPOLL_CTL_ADD, listenfd, &ev) == -1) {
-        perror("Epoll_ctl: listenfd failed");
+        print_error("Epoll_ctl: listenfd failed");
         close_socket(epollfd);
         return -1;
     }
@@ -26,7 +26,7 @@ int epoll_loop(SOCKET listenfd, server_callback svrcbk)
     for (;;) {
         int ready_num = epoll_wait(epollfd, events, MAX_CONN, -1), i = 0;
         if (ready_num < 0) {
-            perror("Epoll_wait failed");
+            print_error("Epoll_wait failed");
         }
 
         for (i=0; i<ready_num; i++) {
@@ -34,19 +34,19 @@ int epoll_loop(SOCKET listenfd, server_callback svrcbk)
             if (events[i].data.fd == listenfd) {
                 SOCKET connfd = accept(listenfd, NULL, NULL);
                 if (connfd < 0) {
-                    perror("Accept failed");
+                    print_error("Accept failed");
                     continue;
                 }
                 if (fcntl(connfd, F_SETFL, fcntl(connfd, F_GETFL, 0) | O_NONBLOCK) < 0) {
                     close_socket(connfd);
-                    perror("Set nonblock failed");
+                    print_error("Set nonblock failed");
                     continue;
                 }
                 ev.events = EPOLLIN | EPOLLET;
                 ev.data.fd = connfd;
                 if (epoll_ctl(epollfd, EPOLL_CTL_ADD, connfd, &ev) == -1) {
                     close_socket(connfd);
-                    perror("Epoll_ctl: add connfd failed");
+                    print_error("Epoll_ctl: add connfd failed");
                     continue;
                 }
                 alloc_io_context((void*)(long)connfd);

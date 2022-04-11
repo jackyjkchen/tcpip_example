@@ -37,6 +37,8 @@ extern int close_socket(SOCKET fd);
 
 extern int get_last_error();
 
+extern void print_error(const char *msg);
+
 #ifndef _WIN32
 extern int set_rlimit();
 #endif

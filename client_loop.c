@@ -6,13 +6,13 @@ int main(int argc, char **argv)
     struct sockaddr_in server_addr;
 
     if (argc != 3) {
-        printf("Please input server adderss and client num.");
+        fprintf(stderr, "Please input server adderss and client num.");
         return -1;
     }
 
     client_num = strtol(argv[2], (char **)NULL, 10);
     if (client_num <= 0) {
-        perror("invalid client num");
+        print_error("invalid client num");
         return -1;
     }
 
