@@ -6,7 +6,7 @@ int main(int argc, char **argv) {
     socklen_t socklen = sizeof(struct sockaddr);
     SOCKET fd;
     const char *str = "hello, world";
-    char buf[BUF_SIZE] = { 0 };
+    char buf[UDP_BUF_SIZE] = { 0 };
 
     if (argc != 3) {
         fprintf(stderr, "Please input server adderss and client num.");
@@ -24,17 +24,17 @@ int main(int argc, char **argv) {
     }
 
     fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (fd < 0) {
+    if (fd == INVALID_SOCKET) {
         print_error("Create socket failed");
         return -1;
     }
 
     memcpy(buf, str, strlen(str) + 1);
     for (i = 0; i < client_num; ++i) {
-        if (sendto(fd, buf, BUF_SIZE, MSG_NOSIGNAL,
-                   (const struct sockaddr *)&server_addr, sizeof(server_addr)) == BUF_SIZE) {
-            if (recvfrom(fd, buf, BUF_SIZE, 0, (struct sockaddr *)&server_addr, &socklen) == BUF_SIZE) {
-                printf("send and recv: %ld bytes - string: %s\n", (long)(BUF_SIZE), buf);
+        if (sendto(fd, buf, UDP_BUF_SIZE, MSG_NOSIGNAL,
+                   (const struct sockaddr *)&server_addr, sizeof(server_addr)) == UDP_BUF_SIZE) {
+            if (recvfrom(fd, buf, UDP_BUF_SIZE, 0, (struct sockaddr *)&server_addr, &socklen) == UDP_BUF_SIZE) {
+                printf("send and recv: %ld bytes - string: %s\n", (long)(UDP_BUF_SIZE), buf);
             } else {
                 print_error("Recv failed");
             }

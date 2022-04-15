@@ -32,7 +32,7 @@ int epoll_loop(SOCKET listenfd, server_callback svrcbk) {
             if (events[i].data.fd == listenfd) {
                 SOCKET connfd = accept(listenfd, NULL, NULL);
 
-                if (connfd < 0) {
+                if (connfd == INVALID_SOCKET) {
                     print_error("Accept failed");
                     continue;
                 }

@@ -5,14 +5,14 @@
 
 void select_loop(SOCKET listenfd, server_callback svrcbk) {
     SOCKET connfd, maxfd;
-    ssize_t selfd[FD_SETSIZE];
+    SOCKET selfd[FD_SETSIZE];
     int ready_num;
     int i = 0, maxi = -1;
     fd_set allset, rset;
 
     maxfd = listenfd;
     for (i = 0; i < FD_SETSIZE; ++i) {
-        selfd[i] = -1;
+        selfd[i] = INVALID_SOCKET;
     }
     FD_ZERO(&allset);
     FD_SET(listenfd, &allset);
@@ -29,11 +29,7 @@ void select_loop(SOCKET listenfd, server_callback svrcbk) {
             u_long iMode = 1;
 #endif
             connfd = accept(listenfd, NULL, NULL);
-#ifdef _WIN32
             if (connfd == INVALID_SOCKET) {
-#else
-            if (connfd < 0) {
-#endif
                 print_error("Accept failed");
                 continue;
             }
@@ -48,7 +44,7 @@ void select_loop(SOCKET listenfd, server_callback svrcbk) {
             }
 
             for (i = 0; i < FD_SETSIZE; ++i) {
-                if (selfd[i] < 0) {
+                if (selfd[i] == INVALID_SOCKET) {
                     selfd[i] = connfd;
                     break;
                 }
@@ -80,7 +76,7 @@ void select_loop(SOCKET listenfd, server_callback svrcbk) {
         }
 
         for (i = 0; i <= maxi; ++i) {
-            if ((connfd = selfd[i]) < 0) {
+            if ((connfd = selfd[i]) == INVALID_SOCKET) {
                 continue;
             }
             if (FD_ISSET(connfd, &rset)) {

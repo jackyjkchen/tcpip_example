@@ -37,7 +37,7 @@ void alloc_io_context(void *key) {
     io_context_t io_context;
     io_context.fd = key;
     io_context.buf = NULL;
-    io_context.bufsize = BUF_SIZE;
+    io_context.bufsize = TCP_BUF_SIZE;
     io_context.recvbytes = 0;
     io_context.sendbytes = 0;
     io_context.sendagain = 0;

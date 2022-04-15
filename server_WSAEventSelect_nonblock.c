@@ -5,7 +5,7 @@ int main(int argc, char **argv) {
     int ret;
 
     listenfd = server_socket_init(TCP, 1);
-    if (listenfd < 0) {
+    if (listenfd == INVALID_SOCKET) {
         return -1;
     }
 

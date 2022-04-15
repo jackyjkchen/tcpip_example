@@ -27,7 +27,7 @@ int server_socket_init(int protocol, int nonblock) {
         fprintf(stderr, "Unsupport protocol");
         return -1;
     }
-    if (listenfd < 0) {
+    if (listenfd == INVALID_SOCKET) {
         print_error("Create socket failed");
         return -1;
     }
@@ -83,18 +83,16 @@ int reflect_server_callback(void *param) {
 #endif
     io_context->sendagain = 0;
     while (1) {
-        ssize_t n = 0;
+        ssize_t r = 0;
 
-        if (io_context->recvbytes == io_context->sendbytes) {
-            n = recv(fd, io_context->buf + io_context->recvbytes, io_context->bufsize - io_context->recvbytes, 0);
-            if (n == 0) {
-                shutdown(fd, IO_SHUT_RD);
-            }
+        r = recv(fd, io_context->buf + io_context->recvbytes, io_context->bufsize - io_context->recvbytes, 0);
+        if (r == 0) {
+            shutdown(fd, IO_SHUT_RD);
         }
-        if (n > 0 || (n == 0 && io_context->recvbytes > io_context->sendbytes)) {
+        if (r > 0 || (r == 0 && io_context->recvbytes > io_context->sendbytes)) {
             ssize_t w = 0;
 
-            io_context->recvbytes += n;
+            io_context->recvbytes += r;
             if (io_context->recvbytes - io_context->sendbytes > 0) {
                 w = send(fd, io_context->buf + io_context->sendbytes,
                          io_context->recvbytes - io_context->sendbytes, MSG_NOSIGNAL);
@@ -112,7 +110,7 @@ int reflect_server_callback(void *param) {
             } else {
                 io_context->sendbytes += w;
             }
-        } else if (n < 0) {
+        } else if (r < 0) {
             int err = get_last_error();
 
             if (err == IO_EINTR) {
@@ -121,15 +119,9 @@ int reflect_server_callback(void *param) {
             ret = -1;
             break;
         } else {
-            if (io_context->sendbytes == io_context->recvbytes) {
-                int err = get_last_error();
-
-                if (err != IO_EWOULDBLOCK && err != IO_OK) {
-                    ret = -1;
-                }
-                shutdown(fd, IO_SHUT_WR);
-                break;
-            }
+            shutdown(fd, IO_SHUT_WR);
+            ret = -1;
+            break;
         }
         if (io_context->recvbytes == io_context->bufsize && io_context->sendbytes == io_context->recvbytes) {
             io_context->recvbytes = 0;

@@ -31,19 +31,19 @@ int client_socket_init(const char *straddr, struct sockaddr_in *pserver_addr) {
 }
 
 void reflect_client_callback(void *param) {
-    SOCKET connfd = 0;
-    char buf[BUF_SIZE] = { 0 };
+    SOCKET connfd = INVALID_SOCKET;
+	char buf[TCP_BUF_SIZE] = { 0 };
     const char *str = "hello, world";
     struct sockaddr_in *pserver_addr = (struct sockaddr_in *)param;
-    ssize_t bufsize = BUF_SIZE;
+    ssize_t bufsize = TCP_BUF_SIZE;
     ssize_t recvbytes = 0;
     ssize_t sendbytes = 0;
 
     memcpy(buf, str, strlen(str) + 1);
     do {
-        SOCKET connfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        connfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
-        if (connfd < 0) {
+        if (connfd == INVALID_SOCKET) {
             print_error("Create socket failed");
             break;
         }
@@ -64,7 +64,7 @@ void reflect_client_callback(void *param) {
                 break;
             } else {
                 sendbytes += w;
-                if (sendbytes == bufsize) {
+                if ( w > 0 && sendbytes >= bufsize) {
                     shutdown(connfd, IO_SHUT_WR);
                 }
                 if ((r = recv(connfd, buf + recvbytes, bufsize - recvbytes, 0)) < 0) {
@@ -76,13 +76,16 @@ void reflect_client_callback(void *param) {
                         shutdown(connfd, IO_SHUT_RD);
                         printf("send and recv: %ld bytes - string: %s\n", (long)(recvbytes), buf);
                         break;
+                    } else if (r == 0) {
+                        fprintf(stderr, "Recv truncate, send: %ld, recv: %ld bytes\n", (long)(sendbytes), (long)(recvbytes));
+                        break;
                     }
                 }
             }
         }
     } while (0);
 
-    if (connfd > 0) {
+    if (connfd != INVALID_SOCKET) {
         close_socket(connfd);
     }
 }

@@ -8,7 +8,7 @@ void poll_loop(SOCKET listenfd, server_callback svrcbk) {
     pollev[0].fd = listenfd;
     pollev[0].events = POLLRDNORM;
     for (i = 1; i < MAX_CONN; ++i) {
-        pollev[i].fd = -1;
+        pollev[i].fd = INVALID_SOCKET;
     }
 
     while (1) {
@@ -21,7 +21,7 @@ void poll_loop(SOCKET listenfd, server_callback svrcbk) {
 
         if (pollev[0].revents == POLLRDNORM) {
             connfd = accept(listenfd, NULL, NULL);
-            if (connfd < 0) {
+            if (connfd == INVALID_SOCKET) {
                 print_error("Accept failed");
                 continue;
             }
@@ -33,7 +33,7 @@ void poll_loop(SOCKET listenfd, server_callback svrcbk) {
             }
 
             for (i = 0; i < MAX_CONN; ++i) {
-                if (pollev[i].fd < 0) {
+                if (pollev[i].fd == INVALID_SOCKET) {
                     pollev[i].fd = connfd;
                     break;
                 }
@@ -59,7 +59,7 @@ void poll_loop(SOCKET listenfd, server_callback svrcbk) {
         for (i = 1; i <= maxi; ++i) {
             io_context_t *io_context = NULL;
 
-            if ((connfd = pollev[i].fd) < 0) {
+            if ((connfd = pollev[i].fd) == INVALID_SOCKET) {
                 continue;
             }
             io_context = get_io_context((void *)(long)(connfd));

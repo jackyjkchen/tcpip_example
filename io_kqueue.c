@@ -26,12 +26,12 @@ int kqueue_loop(SOCKET listenfd, server_callback svrcbk) {
         }
 
         for (i = 0; i < ready_num; i++) {
-            io_context_t *io_context = get_io_context((void *)(long)(kevents[i].ident));
 
+            io_context_t *io_context = get_io_context((void *)(long)(kevents[i].ident));
             if ((int)(kevents[i].ident) == listenfd) {
                 SOCKET connfd = accept(listenfd, NULL, NULL);
 
-                if (connfd < 0) {
+                if (connfd == INVALID_SOCKET) {
                     print_error("Accept failed");
                     continue;
                 }
@@ -40,7 +40,7 @@ int kqueue_loop(SOCKET listenfd, server_callback svrcbk) {
                     close_socket(connfd);
                     continue;
                 }
-                EV_SET(&kev, connfd, EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, 0);
+                EV_SET(&kev, connfd, EVFILT_READ, EV_ADD, 0, 0, 0);
                 if (kevent(kq, &kev, 1, NULL, 0, NULL) != 0) {
                     print_error("Add kevent failed");
                     close_socket(connfd);
@@ -48,9 +48,11 @@ int kqueue_loop(SOCKET listenfd, server_callback svrcbk) {
                 }
                 alloc_io_context((void *)(long)connfd);
             } else if (kevents[i].filter == EVFILT_READ) {
-                if (svrcbk(io_context) < 0 && get_last_error() != IO_EWOULDBLOCK) {
-                    close_socket(kevents[i].ident);
-                    free_io_context(io_context->fd);
+                if (svrcbk(io_context) < 0 ) {
+                    if (get_last_error() != IO_EWOULDBLOCK) {
+                        close_socket(kevents[i].ident);
+                        free_io_context(io_context->fd);
+                    }
                 }
             } else {
                 close_socket(kevents[i].ident);
@@ -59,6 +61,6 @@ int kqueue_loop(SOCKET listenfd, server_callback svrcbk) {
         }
     }
 
-    close_socket(kq);
+    close(kq);
     return 0;
 }

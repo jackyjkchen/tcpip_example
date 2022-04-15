@@ -24,6 +24,7 @@ typedef int ssize_t;
 #include <netinet/in.h>
 #include <arpa/inet.h>
 typedef int SOCKET;
+#define INVALID_SOCKET -1
 #define IO_SHUT_RD SHUT_RD
 #define IO_SHUT_WR SHUT_WR
 #define IO_EWOULDBLOCK EWOULDBLOCK
@@ -35,7 +36,8 @@ typedef int SOCKET;
 #define UDP 1
 
 #define SERV_PORT 9876
-#define BUF_SIZE  4096
+#define TCP_BUF_SIZE  1024*1024
+#define UDP_BUF_SIZE  4*1024
 
 #ifdef __cplusplus
 extern "C" {

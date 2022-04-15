@@ -5,7 +5,7 @@ int accept_loop(SOCKET listenfd, server_callback svrcbk) {
 
     io_context.fd = NULL;
     io_context.buf = NULL;
-    io_context.bufsize = BUF_SIZE;
+    io_context.bufsize = TCP_BUF_SIZE;
     io_context.recvbytes = 0;
     io_context.sendbytes = 0;
     io_context.buf = malloc(io_context.bufsize);
@@ -21,7 +21,7 @@ int accept_loop(SOCKET listenfd, server_callback svrcbk) {
 #else
         io_context.fd = (void *)(long)connfd;
 #endif
-        if (connfd < 0) {
+        if (connfd == INVALID_SOCKET) {
             print_error("Accept failed");
             continue;
         }
