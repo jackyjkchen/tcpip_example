@@ -1,4 +1,3 @@
-#include <sys/time.h>
 #ifndef _WIN32
 #include <sys/select.h>
 #endif

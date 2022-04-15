@@ -10,7 +10,7 @@ extern "C" {
 
 typedef struct io_context_t {
     void *fd;
-    void *buf;
+    char *buf;
     ssize_t bufsize;
     ssize_t recvbytes;
     ssize_t sendbytes;

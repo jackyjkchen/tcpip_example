@@ -1,15 +1,16 @@
 #ifndef _IO_COMMON_H_
 #define _IO_COMMON_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#ifndef _POSIX_C_SOURCE
+typedef int ssize_t;
+#endif
 #define IO_SHUT_RD SD_RECEIVE
 #define IO_SHUT_WR SD_SEND
 #define IO_EWOULDBLOCK WSAEWOULDBLOCK
@@ -35,6 +36,10 @@ typedef int SOCKET;
 
 #define SERV_PORT 9876
 #define BUF_SIZE  4096
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern int close_socket(SOCKET fd);
 
