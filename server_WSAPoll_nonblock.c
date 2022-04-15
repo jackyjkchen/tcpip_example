@@ -11,5 +11,6 @@ int main(int argc, char **argv) {
     WSAPoll_loop(listenfd, reflect_server_callback);
 
     close_socket(listenfd);
+    WSACleanup();
     return 0;
 }

@@ -11,7 +11,7 @@ void select_loop(SOCKET listenfd, server_callback svrcbk) {
     fd_set allset, rset;
 
     maxfd = listenfd;
-    for (i = 0; i < MAX_CONN; ++i) {
+    for (i = 0; i < FD_SETSIZE; ++i) {
         selfd[i] = -1;
     }
     FD_ZERO(&allset);
@@ -47,14 +47,14 @@ void select_loop(SOCKET listenfd, server_callback svrcbk) {
                 continue;
             }
 
-            for (i = 0; i < MAX_CONN; ++i) {
+            for (i = 0; i < FD_SETSIZE; ++i) {
                 if (selfd[i] < 0) {
                     selfd[i] = connfd;
                     break;
                 }
             }
 
-            if (i >= MAX_CONN) {
+            if (i >= FD_SETSIZE) {
                 print_error("Too many clients");
                 close_socket(connfd);
                 continue;

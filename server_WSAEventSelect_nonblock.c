@@ -12,5 +12,6 @@ int main(int argc, char **argv) {
     ret = WSAEventSelect_loop(listenfd, reflect_server_callback);
 
     close_socket(listenfd);
+    WSACleanup();
     return ret;
 }
