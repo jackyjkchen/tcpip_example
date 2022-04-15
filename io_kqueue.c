@@ -36,14 +36,14 @@ int kqueue_loop(SOCKET listenfd, server_callback svrcbk) {
                     continue;
                 }
                 if (fcntl(connfd, F_SETFL, fcntl(connfd, F_GETFL, 0) | O_NONBLOCK) < 0) {
-                    close_socket(connfd);
                     print_error("Set nonblock failed");
+                    close_socket(connfd);
                     continue;
                 }
                 EV_SET(&kev, connfd, EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, 0);
                 if (kevent(kq, &kev, 1, NULL, 0, NULL) != 0) {
-                    close_socket(connfd);
                     print_error("Add kevent failed");
+                    close_socket(connfd);
                     continue;
                 }
                 alloc_io_context((void *)(long)connfd);

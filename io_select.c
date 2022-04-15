@@ -5,7 +5,7 @@
 
 void select_loop(SOCKET listenfd, server_callback svrcbk) {
     SOCKET connfd, maxfd;
-    ssize_t selfd[MAX_CONN];
+    ssize_t selfd[FD_SETSIZE];
     int ready_num;
     int i = 0, maxi = -1;
     fd_set allset, rset;
@@ -29,7 +29,11 @@ void select_loop(SOCKET listenfd, server_callback svrcbk) {
             u_long iMode = 1;
 #endif
             connfd = accept(listenfd, NULL, NULL);
+#ifdef _WIN32
+            if (connfd == INVALID_SOCKET) {
+#else
             if (connfd < 0) {
+#endif
                 print_error("Accept failed");
                 continue;
             }
@@ -38,8 +42,8 @@ void select_loop(SOCKET listenfd, server_callback svrcbk) {
 #else
             if (fcntl(connfd, F_SETFL, fcntl(connfd, F_GETFL, 0) | O_NONBLOCK) < 0) {
 #endif
-                close_socket(connfd);
                 print_error("Set nonblock failed");
+                close_socket(connfd);
                 continue;
             }
 
@@ -50,21 +54,17 @@ void select_loop(SOCKET listenfd, server_callback svrcbk) {
                 }
             }
 
+            if (i >= MAX_CONN) {
+                print_error("Too many clients");
+                close_socket(connfd);
+                continue;
+            }
+
 #ifdef _WIN32
             alloc_io_context((void *)connfd);
 #else
             alloc_io_context((void *)(long)connfd);
 #endif
-            if (i >= MAX_CONN) {
-                close_socket(connfd);
-#ifdef _WIN32
-                free_io_context((void *)(connfd));
-#else
-                free_io_context((void *)(long)(connfd));
-#endif
-                print_error("Too many clients");
-                continue;
-            }
 
             FD_SET(connfd, &allset);
 

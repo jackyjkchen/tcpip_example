@@ -8,7 +8,7 @@
 #ifdef _WIN32
 #include <winsock2.h>
 typedef int socklen_t;
-#ifndef _POSIX_C_SOURCE
+#ifndef __MINGW32__
 typedef int ssize_t;
 #endif
 #define IO_SHUT_RD SD_RECEIVE

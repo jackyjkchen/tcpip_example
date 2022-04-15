@@ -72,8 +72,7 @@ int WSAEventSelect_loop(SOCKET listenfd, server_callback svrcbk) {
             if (ioctlsocket(connfd, FIONBIO, &iMode) != NO_ERROR) {
                 print_error("Set nonblock failed");
                 close_socket(connfd);
-                ret = -1;
-                break;
+                continue;
             }
             if ((events[event_total] = WSACreateEvent()) == WSA_INVALID_EVENT) {
                 print_error("WSACreateEvent connfd failed");

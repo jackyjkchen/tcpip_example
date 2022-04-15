@@ -37,15 +37,15 @@ int epoll_loop(SOCKET listenfd, server_callback svrcbk) {
                     continue;
                 }
                 if (fcntl(connfd, F_SETFL, fcntl(connfd, F_GETFL, 0) | O_NONBLOCK) < 0) {
-                    close_socket(connfd);
                     print_error("Set nonblock failed");
+                    close_socket(connfd);
                     continue;
                 }
                 ev.events = EPOLLIN | EPOLLET;
                 ev.data.fd = connfd;
                 if (epoll_ctl(epollfd, EPOLL_CTL_ADD, connfd, &ev) == -1) {
-                    close_socket(connfd);
                     print_error("Epoll_ctl: add connfd failed");
+                    close_socket(connfd);
                     continue;
                 }
                 alloc_io_context((void *)(long)connfd);

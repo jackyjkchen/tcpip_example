@@ -5,11 +5,16 @@ CXXFLAGS ?= ${CFLAGS}
 LDFLAGS = -lws2_32
 include ./makefile.common
 
-progs = server_WSAEventSelect_nonblock
+progs = server_WSAEventSelect_nonblock server_WSAPoll_nonblock
 
 all: ${progs}
 
 io_WSAEventSelect.o: io_WSAEventSelect.c io_WSAEventSelect.h
 
+io_WSAPoll.o: io_WSAPoll.c io_WSAPoll.h
+
 server_WSAEventSelect_nonblock: server_WSAEventSelect_nonblock.o io_WSAEventSelect.o io_server.o io_context.o io_common.o
 	${CXX} ${CFLAGS} server_WSAEventSelect_nonblock.o io_WSAEventSelect.o io_server.o io_context.o io_common.o ${LDFLAGS} -o $@.exe
+
+server_WSAPoll_nonblock: server_WSAPoll_nonblock.o io_WSAPoll.o io_server.o io_context.o io_common.o
+	${CXX} ${CFLAGS} server_WSAPoll_nonblock.o io_WSAPoll.o io_server.o io_context.o io_common.o ${LDFLAGS} -o $@.exe
