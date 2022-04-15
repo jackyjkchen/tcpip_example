@@ -48,7 +48,11 @@ void alloc_io_context(void *key) {
     }
     memset(io_context.buf, 0x00, io_context.bufsize);
     io_context_map &ctx_map = get_map_inst();
+#if defined(__WATCOMC__)
+    io_context_map::iterator &i = ctx_map.find(key);
+#else
     const io_context_map::iterator &i = ctx_map.find(key);
+#endif
     if (i == ctx_map.end()) {
         ctx_map[key] = io_context;
     }
@@ -56,7 +60,11 @@ void alloc_io_context(void *key) {
 
 void free_io_context(void *key) {
     io_context_map &ctx_map = get_map_inst();
+#if defined(__WATCOMC__)
+    io_context_map::iterator &i = ctx_map.find(key);
+#else
     const io_context_map::iterator &i = ctx_map.find(key);
+#endif
     if (i != ctx_map.end()) {
 #ifdef MAP_HAVE_SECOND
         io_context_t &value = i->second;
@@ -72,7 +80,11 @@ void free_io_context(void *key) {
 io_context_t *get_io_context(void *key) {
     io_context_map &ctx_map = get_map_inst();
     io_context_t *ret = NULL;
+#if defined(__WATCOMC__)
+    io_context_map::iterator &i = ctx_map.find(key);
+#else
     const io_context_map::iterator &i = ctx_map.find(key);
+#endif
     if (i != ctx_map.end()) {
 #ifdef MAP_HAVE_SECOND
         ret = &i->second;

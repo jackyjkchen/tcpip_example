@@ -7,7 +7,7 @@
 
 #ifdef _WIN32
 #include <winsock2.h>
-#include <ws2tcpip.h>
+typedef int socklen_t;
 #ifndef _POSIX_C_SOURCE
 typedef int ssize_t;
 #endif
