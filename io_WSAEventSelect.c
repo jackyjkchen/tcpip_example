@@ -102,6 +102,9 @@ int WSAEventSelect_loop(SOCKET listenfd, server_callback svrcbk) {
             } while (network_event.lNetworkEvents & FD_CLOSE);
         }
     }
-    WSACloseEvent(events[0]);
+    for (i = 0; i < event_total; i++) {
+        WSACloseEvent(events[i]);
+    }
+    event_total = 0;
     return ret;
 }
