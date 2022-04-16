@@ -8,4 +8,5 @@
 *.out
 *.rej
 *.so
+*.core
 core

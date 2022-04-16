@@ -40,14 +40,23 @@ int kqueue_loop(SOCKET listenfd, server_callback svrcbk) {
                     close_socket(connfd);
                     continue;
                 }
-                EV_SET(&kev, connfd, EVFILT_READ, EV_ADD, 0, 0, 0);
+                EV_SET(&kev, connfd, EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, 0);
+                if (kevent(kq, &kev, 1, NULL, 0, NULL) != 0) {
+                    print_error("Add kevent failed");
+                    close_socket(connfd);
+                    continue;
+                }
+                EV_SET(&kev, connfd, EVFILT_WRITE, EV_ADD | EV_CLEAR, 0, 0, 0);
                 if (kevent(kq, &kev, 1, NULL, 0, NULL) != 0) {
                     print_error("Add kevent failed");
                     close_socket(connfd);
                     continue;
                 }
                 alloc_io_context((void *)(long)connfd);
-            } else if (kevents[i].filter == EVFILT_READ) {
+            } else if (kevents[i].filter == EVFILT_READ || kevents[i].filter == EVFILT_WRITE) {
+                if (io_context == NULL) {
+                    continue;
+                }
                 svrcbk(io_context);
                 if (get_last_error() != IO_EWOULDBLOCK) {
                     close_socket(kevents[i].ident);
