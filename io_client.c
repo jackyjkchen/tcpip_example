@@ -1,6 +1,6 @@
 #include "io_client.h"
 
-int client_socket_init(const char *straddr, struct sockaddr_in *pserver_addr) {
+int client_socket_init(const char *straddr, const unsigned short port, struct sockaddr_in *pserver_addr) {
 #ifdef _WIN32
     WSADATA wsaData;
 
@@ -17,7 +17,7 @@ int client_socket_init(const char *straddr, struct sockaddr_in *pserver_addr) {
 
     memset(pserver_addr, 0x00, sizeof(struct sockaddr_in));
     pserver_addr->sin_family = AF_INET;
-    pserver_addr->sin_port = htons(SERV_PORT);
+    pserver_addr->sin_port = htons(port);
 #ifdef _WIN32
     pserver_addr->sin_addr.s_addr = inet_addr(straddr);
     if (pserver_addr->sin_addr.s_addr == INADDR_NONE || pserver_addr->sin_addr.s_addr == INADDR_ANY) {

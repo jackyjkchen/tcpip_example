@@ -10,7 +10,7 @@ extern "C" {
 
 extern void reflect_client_callback(void *param);
 
-extern int client_socket_init(const char *straddr, struct sockaddr_in *pserver_addr);
+extern int client_socket_init(const char *straddr, const unsigned short port, struct sockaddr_in *pserver_addr);
 
 #ifdef __cplusplus
 }

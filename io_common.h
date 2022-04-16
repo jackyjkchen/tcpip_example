@@ -36,7 +36,8 @@ typedef int SOCKET;
 #define TCP 0
 #define UDP 1
 
-#define SERV_PORT 9876
+#define TCP_SERV_PORT 9876
+#define UDP_SERV_PORT 6789
 #define TCP_DATA_SIZE 1024*1024
 #define TCP_BUF_SIZE  256*1024
 #define UDP_BUF_SIZE  548

@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    if (client_socket_init(argv[1], &server_addr) != 0) {
+    if (client_socket_init(argv[1], TCP_SERV_PORT, &server_addr) != 0) {
         return -1;
     }
 
