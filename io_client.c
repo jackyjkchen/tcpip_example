@@ -32,17 +32,25 @@ int client_socket_init(const char *straddr, struct sockaddr_in *pserver_addr) {
 
 void reflect_client_callback(void *param) {
     SOCKET connfd = INVALID_SOCKET;
-    char buf[TCP_DATA_SIZE] = { 0 };
     const char *str = "hello, world";
+    char *buf = NULL;
     struct sockaddr_in *pserver_addr = (struct sockaddr_in *)param;
     ssize_t bufsize = TCP_DATA_SIZE;
     ssize_t recvbytes = 0;
     ssize_t sendbytes = 0;
 
+    buf = (char *)malloc(TCP_DATA_SIZE);
+    if (buf == NULL) {
+        print_error("Malloc buf failed");
+        return;
+    }
+    memset(buf, 0x00, TCP_DATA_SIZE);
     memcpy(buf, str, strlen(str) + 1);
     do {
 #ifdef _WIN32
         u_long iMode = 1;
+#else
+        int flag;
 #endif
         connfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
@@ -55,19 +63,24 @@ void reflect_client_callback(void *param) {
             print_error("Connect failed");
             break;
         }
-#ifdef _WIN32
-        if (ioctlsocket(connfd, FIONBIO, &iMode) != NO_ERROR) {
-#else
-        if (fcntl(connfd, F_SETFL, fcntl(connfd, F_GETFL, 0) | O_NONBLOCK) < 0) {
+
+#ifndef _WIN32
+        flag = fcntl(connfd, F_GETFL, 0);
 #endif
-            close_socket(connfd);
-            print_error("Set nonblock failed");
-        }
 
         while (1) {
             int r = 0, w = 0, err = IO_OK;
 
             if (sendbytes < bufsize) {
+#ifdef _WIN32
+                iMode = 1;
+                if (ioctlsocket(connfd, FIONBIO, &iMode) != NO_ERROR) {
+#else
+                if (fcntl(connfd, F_SETFL, flag | O_NONBLOCK) < 0) {
+#endif
+                    print_error("Set nonblock failed");
+                    break;
+                }
                 w = send(connfd, buf + sendbytes, bufsize - sendbytes, MSG_NOSIGNAL);
             }
             if (w < 0) {
@@ -86,6 +99,15 @@ void reflect_client_callback(void *param) {
                         shutdown(connfd, IO_SHUT_WR);
                     }
                 }
+#ifdef _WIN32
+                    iMode = 0;
+                    if (ioctlsocket(connfd, FIONBIO, &iMode) != NO_ERROR) {
+#else
+                    if (fcntl(connfd, F_SETFL, flag) < 0) {
+#endif
+                        print_error("Set nonblock failed");
+                        break;
+                    }
                 if ((r = recv(connfd, buf + recvbytes, bufsize - recvbytes, 0)) < 0) {
                     err = get_last_error();
                     if (err == IO_EINTR) {
@@ -110,6 +132,7 @@ void reflect_client_callback(void *param) {
         }
     } while (0);
 
+    free(buf);
     if (connfd != INVALID_SOCKET) {
         close_socket(connfd);
     }
