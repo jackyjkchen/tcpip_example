@@ -43,15 +43,15 @@ int server_socket_init(int protocol, int nonblock) {
     server_addr.sin_port = htons(SERV_PORT);
 
     if (bind(listenfd, (const struct sockaddr *)&server_addr, sizeof(server_addr)) != 0) {
-        close_socket(listenfd);
         print_error("Bind server_addr failed");
+        close_socket(listenfd);
         return -1;
     }
 
     if (protocol == TCP) {
         if (listen(listenfd, LISTENQ) != 0) {
-            close_socket(listenfd);
             print_error("Listen port failed");
+            close_socket(listenfd);
             return -1;
         }
     }
@@ -84,9 +84,9 @@ void reflect_server_callback(void *param) {
     while (1) {
         ssize_t r = 0;
 
-        if (!io_context->recvdone) {
+        if (!io_context->recvdone && io_context->bufsize > io_context->recvbytes) {
             r = recv(fd, io_context->buf + io_context->recvbytes, io_context->bufsize - io_context->recvbytes, 0);
-            if (r == 0) {
+            if (r == 0 && io_context->bufsize > io_context->recvbytes) {
                 shutdown(fd, IO_SHUT_RD);
                 io_context->recvdone = 1;
             }

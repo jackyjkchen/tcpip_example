@@ -32,15 +32,18 @@ int client_socket_init(const char *straddr, struct sockaddr_in *pserver_addr) {
 
 void reflect_client_callback(void *param) {
     SOCKET connfd = INVALID_SOCKET;
-	char buf[TCP_BUF_SIZE] = { 0 };
+    char buf[TCP_DATA_SIZE] = { 0 };
     const char *str = "hello, world";
     struct sockaddr_in *pserver_addr = (struct sockaddr_in *)param;
-    ssize_t bufsize = TCP_BUF_SIZE;
+    ssize_t bufsize = TCP_DATA_SIZE;
     ssize_t recvbytes = 0;
     ssize_t sendbytes = 0;
 
     memcpy(buf, str, strlen(str) + 1);
     do {
+#ifdef _WIN32
+        u_long iMode = 1;
+#endif
         connfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
         if (connfd == INVALID_SOCKET) {
@@ -52,24 +55,45 @@ void reflect_client_callback(void *param) {
             print_error("Connect failed");
             break;
         }
+#ifdef _WIN32
+        if (ioctlsocket(connfd, FIONBIO, &iMode) != NO_ERROR) {
+#else
+        if (fcntl(connfd, F_SETFL, fcntl(connfd, F_GETFL, 0) | O_NONBLOCK) < 0) {
+#endif
+            close_socket(connfd);
+            print_error("Set nonblock failed");
+        }
 
         while (1) {
-            int r = 0, w = 0;
+            int r = 0, w = 0, err = IO_OK;
 
             if (sendbytes < bufsize) {
                 w = send(connfd, buf + sendbytes, bufsize - sendbytes, MSG_NOSIGNAL);
             }
             if (w < 0) {
-                print_error("Send failed");
-                break;
-            } else {
-                sendbytes += w;
-                if ( w > 0 && sendbytes >= bufsize) {
-                    shutdown(connfd, IO_SHUT_WR);
+                err = get_last_error();
+                if (err == IO_EINTR) {
+                    continue;
+                } else if (err != IO_EWOULDBLOCK) {
+                    print_error("Send failed");
+                    break;
+                }
+            }
+            if (w >= 0 || (w < 0 && err == IO_EWOULDBLOCK)) {
+                if (w > 0) {
+                    sendbytes += w;
+                    if (sendbytes >= bufsize) {
+                        shutdown(connfd, IO_SHUT_WR);
+                    }
                 }
                 if ((r = recv(connfd, buf + recvbytes, bufsize - recvbytes, 0)) < 0) {
-                    print_error("Recv failed");
-                    break;
+                    err = get_last_error();
+                    if (err == IO_EINTR) {
+                        continue;
+                    } else if (err != IO_EWOULDBLOCK) {
+                        print_error("Recv failed");
+                        break;
+                    }
                 } else {
                     recvbytes += r;
                     if (recvbytes >= bufsize) {
@@ -77,6 +101,7 @@ void reflect_client_callback(void *param) {
                         printf("send and recv: %ld bytes - string: %s\n", (long)(recvbytes), buf);
                         break;
                     } else if (r == 0) {
+                        shutdown(connfd, IO_SHUT_RD);
                         fprintf(stderr, "Recv truncate, send: %ld, recv: %ld bytes\n", (long)(sendbytes), (long)(recvbytes));
                         break;
                     }

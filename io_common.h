@@ -19,6 +19,7 @@ typedef int ssize_t;
 #else
 #include <unistd.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -36,7 +37,8 @@ typedef int SOCKET;
 #define UDP 1
 
 #define SERV_PORT 9876
-#define TCP_BUF_SIZE  1024*1024
+#define TCP_DATA_SIZE 1024*1024
+#define TCP_BUF_SIZE  256*1024
 #define UDP_BUF_SIZE  4*1024
 
 #ifdef __cplusplus
