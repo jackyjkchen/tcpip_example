@@ -64,22 +64,21 @@ void WSAPoll_loop(SOCKET listenfd, server_callback svrcbk) {
                 continue;
             }
             io_context = get_io_context((void *)(connfd));
-            if (pollev[i].revents & POLLRDNORM || pollev[i].revents & POLLWRNORM) {
-                if (svrcbk(io_context) < 0) {
-                    if (get_last_error() != IO_EWOULDBLOCK) {
-                        close_socket(connfd);
-                        free_io_context(io_context->fd);
-                        pollev[i].fd = INVALID_SOCKET;
-                    } else if (io_context->sendagain) {
-                        pollev[i].events = POLLRDNORM | POLLWRNORM;
-                    }
-                } else if (pollev[i].events & POLLWRNORM) {
+            if (pollev[i].revents & POLLRDNORM || pollev[i].revents & POLLWRNORM || pollev[i].revents & POLLHUP) {
+                svrcbk(io_context);
+                if (get_last_error() != IO_EWOULDBLOCK) {
+                    close_socket(connfd);
+                    free_io_context(io_context->fd);
+                    pollev[i].fd = INVALID_SOCKET;
+                } else if (io_context->sendagain) {
+                    pollev[i].events = POLLRDNORM | POLLWRNORM;
+                } else if (!io_context->sendagain && pollev[i].events & POLLWRNORM) {
                     pollev[i].events = POLLRDNORM;
                 }
                 if (--ready_num <= 0) {
                     break;
                 }
-            } else if (pollev[i].revents & POLLERR || pollev[i].revents & POLLHUP) {
+            } else if (pollev[i].revents & POLLERR) {
                 close_socket(connfd);
                 free_io_context(io_context->fd);
                 pollev[i].fd = INVALID_SOCKET;

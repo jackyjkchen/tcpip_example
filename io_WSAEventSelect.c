@@ -25,7 +25,7 @@ int WSAEventSelect_loop(SOCKET listenfd, server_callback svrcbk) {
         return -1;
     }
 
-    if (WSAEventSelect(listenfd, events[event_total], FD_ACCEPT | FD_CLOSE) == SOCKET_ERROR) {
+    if (WSAEventSelect(listenfd, events[event_total], FD_ACCEPT) == SOCKET_ERROR) {
         print_error("WSAEventSelect listenfd failed");
         return -1;
     }
@@ -87,35 +87,19 @@ int WSAEventSelect_loop(SOCKET listenfd, server_callback svrcbk) {
                 break;
             }
             alloc_io_context(events[event_total]);
-            get_io_context(events[event_total++])->fd = (void *)connfd;
-        } else if (network_event.lNetworkEvents & FD_READ || network_event.lNetworkEvents & FD_WRITE) {
-            if (network_event.lNetworkEvents & FD_READ && network_event.iErrorCode[FD_READ_BIT] != 0) {
-                fprintf(stderr, "FD_READ failed with error %d\n", network_event.iErrorCode[FD_READ_BIT]);
-                continue;
-            }
-            if (network_event.lNetworkEvents & FD_WRITE && network_event.iErrorCode[FD_WRITE_BIT] != 0) {
-                fprintf(stderr, "FD_WRITE failed with error %d\n", network_event.iErrorCode[FD_WRITE_BIT]);
-                continue;
-            }
-            if (svrcbk(io_context) < 0) {
+            get_io_context(events[event_total])->fd = (void *)connfd;
+            event_total++;
+        }
+        if (network_event.lNetworkEvents & FD_READ || network_event.lNetworkEvents & FD_WRITE || network_event.lNetworkEvents & FD_CLOSE) {
+            do {
+                svrcbk(io_context);
                 if (get_last_error() != IO_EWOULDBLOCK) {
                     close_socket(connfd);
                     free_io_context(ev);
                     free_event(event_index - WSA_WAIT_EVENT_0, &event_total, events);
-                } else if (io_context->sendagain) {
-                    continue;
+                    break;
                 }
-            }
-        }
-        if (network_event.lNetworkEvents & FD_CLOSE) {
-            if (network_event.iErrorCode[FD_CLOSE_BIT] != 0) {
-                fprintf(stderr, "FD_CLOSE failed with error %d\n", network_event.iErrorCode[FD_CLOSE_BIT]);
-                ret = -1;
-                break;
-            }
-            close_socket(connfd);
-            free_io_context(ev);
-            free_event(event_index - WSA_WAIT_EVENT_0, &event_total, events);
+            } while (network_event.lNetworkEvents & FD_CLOSE);
         }
     }
     WSACloseEvent(events[0]);

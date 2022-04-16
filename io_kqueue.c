@@ -48,11 +48,10 @@ int kqueue_loop(SOCKET listenfd, server_callback svrcbk) {
                 }
                 alloc_io_context((void *)(long)connfd);
             } else if (kevents[i].filter == EVFILT_READ) {
-                if (svrcbk(io_context) < 0 ) {
-                    if (get_last_error() != IO_EWOULDBLOCK) {
-                        close_socket(kevents[i].ident);
-                        free_io_context(io_context->fd);
-                    }
+                svrcbk(io_context);
+                if (get_last_error() != IO_EWOULDBLOCK) {
+                    close_socket(kevents[i].ident);
+                    free_io_context(io_context->fd);
                 }
             } else {
                 close_socket(kevents[i].ident);

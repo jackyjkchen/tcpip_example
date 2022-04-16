@@ -15,11 +15,11 @@ extern "C" {
 
 #define MAX_CONN  10240
 
-typedef int (*server_callback)(void *param);
+typedef void (*server_callback)(void *param);
 
 extern int server_socket_init(int protocol, int nonblock);
 
-extern int reflect_server_callback(void *param);
+extern void reflect_server_callback(void *param);
 
 #ifdef __cplusplus
 }

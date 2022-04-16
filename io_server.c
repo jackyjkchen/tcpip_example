@@ -72,8 +72,7 @@ int server_socket_init(int protocol, int nonblock) {
     return listenfd;
 }
 
-int reflect_server_callback(void *param) {
-    int ret = 0;
+void reflect_server_callback(void *param) {
     io_context_t *io_context = (io_context_t *)param;
 
 #ifdef _WIN32
@@ -85,9 +84,12 @@ int reflect_server_callback(void *param) {
     while (1) {
         ssize_t r = 0;
 
-        r = recv(fd, io_context->buf + io_context->recvbytes, io_context->bufsize - io_context->recvbytes, 0);
-        if (r == 0) {
-            shutdown(fd, IO_SHUT_RD);
+        if (!io_context->recvdone) {
+            r = recv(fd, io_context->buf + io_context->recvbytes, io_context->bufsize - io_context->recvbytes, 0);
+            if (r == 0) {
+                shutdown(fd, IO_SHUT_RD);
+                io_context->recvdone = 1;
+            }
         }
         if (r > 0 || (r == 0 && io_context->recvbytes > io_context->sendbytes)) {
             ssize_t w = 0;
@@ -105,10 +107,14 @@ int reflect_server_callback(void *param) {
                 } else if (err == IO_EWOULDBLOCK) {
                     io_context->sendagain = 1;
                 }
-                ret = -1;
                 break;
             } else {
                 io_context->sendbytes += w;
+                if (io_context->recvdone) {
+                    if (io_context->recvbytes == io_context->sendbytes) {
+                        shutdown(fd, IO_SHUT_WR);
+                    }
+                }
             }
         } else if (r < 0) {
             int err = get_last_error();
@@ -116,11 +122,9 @@ int reflect_server_callback(void *param) {
             if (err == IO_EINTR) {
                 continue;
             }
-            ret = -1;
             break;
         } else {
-            shutdown(fd, IO_SHUT_WR);
-            ret = -1;
+            set_last_error(IO_OK);
             break;
         }
         if (io_context->recvbytes == io_context->bufsize && io_context->sendbytes == io_context->recvbytes) {
@@ -128,5 +132,4 @@ int reflect_server_callback(void *param) {
             io_context->sendbytes = 0;
         }
     }
-    return ret;
 }

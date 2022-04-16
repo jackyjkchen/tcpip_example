@@ -19,6 +19,14 @@ int get_last_error() {
 #endif
 }
 
+void set_last_error(int err) {
+#ifdef _WIN32
+    WSASetLastError(err);
+#else
+    errno = err;
+#endif
+}
+
 void print_error(const char *msg) {
 #ifdef _WIN32
     char msgbuf[256] = { 0 };

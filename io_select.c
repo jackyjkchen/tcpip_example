@@ -85,12 +85,13 @@ void select_loop(SOCKET listenfd, server_callback svrcbk) {
 #else
                 io_context_t *io_context = get_io_context((void *)(long)(connfd));
 #endif
-                if (svrcbk(io_context) < 0 && get_last_error() != IO_EWOULDBLOCK) {
+                svrcbk(io_context);
+                if (get_last_error() != IO_EWOULDBLOCK) {
                     FD_CLR(connfd, &allset);
 
                     close_socket(connfd);
                     free_io_context(io_context->fd);
-                    selfd[i] = -1;
+                    selfd[i] = INVALID_SOCKET;
                 }
                 if (--ready_num <= 0) {
                     break;

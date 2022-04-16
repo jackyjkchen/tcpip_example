@@ -15,6 +15,7 @@ typedef struct io_context_t {
     ssize_t recvbytes;
     ssize_t sendbytes;
     int sendagain;
+    int recvdone;
 } io_context_t;
 
 extern void alloc_io_context(void *key);

@@ -47,6 +47,8 @@ extern int close_socket(SOCKET fd);
 
 extern int get_last_error();
 
+extern void set_last_error(int err);
+
 extern void print_error(const char *msg);
 
 #ifndef _WIN32
