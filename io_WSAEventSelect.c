@@ -90,7 +90,8 @@ int WSAEventSelect_loop(SOCKET listenfd, server_callback svrcbk) {
             get_io_context(events[event_total])->fd = (void *)connfd;
             event_total++;
         }
-        if (network_event.lNetworkEvents & FD_READ || network_event.lNetworkEvents & FD_WRITE || network_event.lNetworkEvents & FD_CLOSE) {
+        if (network_event.lNetworkEvents & FD_READ || network_event.lNetworkEvents & FD_WRITE
+            || network_event.lNetworkEvents & FD_CLOSE) {
             do {
                 svrcbk(io_context);
                 if (get_last_error() != IO_EWOULDBLOCK) {

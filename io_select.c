@@ -55,7 +55,6 @@ void select_loop(SOCKET listenfd, server_callback svrcbk) {
                 close_socket(connfd);
                 continue;
             }
-
 #ifdef _WIN32
             alloc_io_context((void *)connfd);
 #else

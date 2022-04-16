@@ -63,7 +63,6 @@ void reflect_client_callback(void *param) {
             print_error("Connect failed");
             break;
         }
-
 #ifndef _WIN32
         flag = fcntl(connfd, F_GETFL, 0);
 #endif
@@ -100,14 +99,14 @@ void reflect_client_callback(void *param) {
                     }
                 }
 #ifdef _WIN32
-                    iMode = 0;
-                    if (ioctlsocket(connfd, FIONBIO, &iMode) != NO_ERROR) {
+                iMode = 0;
+                if (ioctlsocket(connfd, FIONBIO, &iMode) != NO_ERROR) {
 #else
-                    if (fcntl(connfd, F_SETFL, flag) < 0) {
+                if (fcntl(connfd, F_SETFL, flag) < 0) {
 #endif
-                        print_error("Set nonblock failed");
-                        break;
-                    }
+                    print_error("Set nonblock failed");
+                    break;
+                }
                 if ((r = recv(connfd, buf + recvbytes, bufsize - recvbytes, 0)) < 0) {
                     err = get_last_error();
                     if (err == IO_EINTR) {
@@ -124,7 +123,8 @@ void reflect_client_callback(void *param) {
                         break;
                     } else if (r == 0) {
                         shutdown(connfd, IO_SHUT_RD);
-                        fprintf(stderr, "Recv truncate, send: %ld, recv: %ld bytes\n", (long)(sendbytes), (long)(recvbytes));
+                        fprintf(stderr, "Recv truncate, send: %ld, recv: %ld bytes\n",
+                                (long)(sendbytes), (long)(recvbytes));
                         break;
                     }
                 }

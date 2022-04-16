@@ -66,9 +66,9 @@ void poll_loop(SOCKET listenfd, server_callback svrcbk) {
             if (pollev[i].revents & POLLRDNORM || pollev[i].revents & POLLWRNORM || pollev[i].revents & POLLHUP) {
                 svrcbk(io_context);
                 if (get_last_error() != IO_EWOULDBLOCK) {
-                        close_socket(connfd);
-                        free_io_context(io_context->fd);
-                        pollev[i].fd = INVALID_SOCKET;
+                    close_socket(connfd);
+                    free_io_context(io_context->fd);
+                    pollev[i].fd = INVALID_SOCKET;
                 } else if (io_context->sendagain) {
                     pollev[i].events = POLLRDNORM | POLLWRNORM;
                 } else if (!io_context->sendagain && pollev[i].events & POLLWRNORM) {

@@ -28,6 +28,7 @@ int kqueue_loop(SOCKET listenfd, server_callback svrcbk) {
         for (i = 0; i < ready_num; i++) {
 
             io_context_t *io_context = get_io_context((void *)(long)(kevents[i].ident));
+
             if ((int)(kevents[i].ident) == listenfd) {
                 SOCKET connfd = accept(listenfd, NULL, NULL);
 
