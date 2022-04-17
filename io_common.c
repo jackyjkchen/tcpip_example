@@ -42,8 +42,13 @@ void print_error(const char *msg) {
 int set_rlimit() {
     struct rlimit rl;
 
+#ifdef __CYGWIN__
+    rl.rlim_cur = 2048;
+    rl.rlim_max = 2048;
+#else
     rl.rlim_cur = 65536;
     rl.rlim_max = 65536;
+#endif
     return setrlimit(RLIMIT_NOFILE, &rl);
 }
 #endif
