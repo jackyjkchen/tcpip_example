@@ -3,8 +3,12 @@ CXX ?= c++
 CFLAGS ?= -O2 -Wall -pipe -pthread
 CXXFLAGS ?= ${CFLAGS} 
 LDFLAGS ?= -Wl,--as-needed
+THREADS ?= 1
 
-progs = client_loop client_thread client_udp server_select_nonblock server_accept_block server_udp_block
+progs = client_loop client_udp server_select_nonblock server_accept_block server_udp_block
+ifeq ($(THREADS),1)
+progs += client_thread
+endif
 
 all: ${progs}
 
@@ -18,17 +22,20 @@ io_select.o: io_select.c io_select.h
 
 io_accept.o: io_accept.c io_accept.h
 
+ifeq ($(THREADS),1)
 thread_pool.o: thread_pool.cpp thread_pool.h
-
 thread_pool_c.o: thread_pool_c.cpp thread_pool_c.h
+endif
 
 io_context.o: io_context.cpp io_context.h
 
 client_loop: client_loop.o io_client.o io_common.o
 	${CC} ${CFLAGS} client_loop.o io_client.o io_common.o ${LDFLAGS} -o $@.exe
 
+ifeq ($(THREADS),1)
 client_thread: client_thread.o io_client.o io_common.o thread_pool_c.o thread_pool.o
 	${CXX} ${CXXFLAGS} client_thread.o io_client.o io_common.o thread_pool_c.o thread_pool.o ${LDFLAGS} -o $@.exe
+endif
 
 client_udp: client_udp.o io_client.o io_common.o
 	${CC} ${CFLAGS} client_udp.o io_client.o io_common.o ${LDFLAGS} -o $@.exe

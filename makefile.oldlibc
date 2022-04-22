@@ -1,0 +1,8 @@
+TARGET = i586-legacy-linux-gnulibc1
+CC = ${TARGET}-gcc
+CXX = ${TARGET}-g++
+CFLAGS = -O2 -Wall -pipe -DUSE_OLD_LIBC
+CXXFLAGS = ${CFLAGS} 
+LDFLAGS =
+THREADS = 0
+include ./makefile.unix

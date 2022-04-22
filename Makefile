@@ -18,5 +18,8 @@ mingw:
 cygwin:
 	+make -f makefile.cygwin
 
+oldlibc:
+	+make -f makefile.oldlibc
+
 clean: 
 	+make -f makefile.common clean

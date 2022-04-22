@@ -22,7 +22,11 @@ int client_socket_init(const char *straddr, const unsigned short port, struct so
     pserver_addr->sin_addr.s_addr = inet_addr(straddr);
     if (pserver_addr->sin_addr.s_addr == INADDR_NONE || pserver_addr->sin_addr.s_addr == INADDR_ANY) {
 #else
+#ifdef USE_OLD_LIBC
+    if (inet_aton(straddr, &pserver_addr->sin_addr) == 0) {
+#else
     if (inet_pton(AF_INET, straddr, &pserver_addr->sin_addr) < 0) {
+#endif
 #endif
         print_error("Server address invalid");
         return -1;

@@ -6,6 +6,7 @@
 #include <string.h>
 
 #ifdef _WIN32
+
 #include <winsock2.h>
 typedef int socklen_t;
 #ifndef __MINGW32__
@@ -16,7 +17,9 @@ typedef int ssize_t;
 #define IO_EWOULDBLOCK WSAEWOULDBLOCK
 #define IO_EINTR WSAEINTR
 #define MSG_NOSIGNAL 0
+
 #else
+
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -26,13 +29,29 @@ typedef int ssize_t;
 #include <arpa/inet.h>
 typedef int SOCKET;
 #define INVALID_SOCKET -1
+
+/* for old libc */
+#ifdef USE_OLD_LIBC
+typedef int socklen_t;
+#ifndef SHUT_RD
+#define SHUT_RD 0
+#endif
+#ifndef SHUT_WR
+#define SHUT_WR 1
+#endif
+#ifndef MSG_NOSIGNAL
+#define MSG_NOSIGNAL 0x4000
+#endif
+#endif /*USE_OLD_LIBC*/
+
 #define IO_SHUT_RD SHUT_RD
 #define IO_SHUT_WR SHUT_WR
 #define IO_EWOULDBLOCK EWOULDBLOCK
 #define IO_EINTR EINTR
-#endif
-#define IO_OK 0
 
+#endif
+
+#define IO_OK 0
 #define TCP 0
 #define UDP 1
 

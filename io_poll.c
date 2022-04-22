@@ -1,4 +1,8 @@
+#ifdef USE_OLD_LIBC
+#include <sys/poll.h>
+#else
 #include <poll.h>
+#endif
 #include "io_poll.h"
 
 void poll_loop(SOCKET listenfd, server_callback svrcbk) {
@@ -6,7 +10,7 @@ void poll_loop(SOCKET listenfd, server_callback svrcbk) {
     struct pollfd pollev[MAX_CONN];
 
     pollev[0].fd = listenfd;
-    pollev[0].events = POLLRDNORM;
+    pollev[0].events = POLLIN;
     for (i = 1; i < MAX_CONN; ++i) {
         pollev[i].fd = INVALID_SOCKET;
     }
@@ -19,7 +23,7 @@ void poll_loop(SOCKET listenfd, server_callback svrcbk) {
             print_error("Poll failed");
         }
 
-        if (pollev[0].revents == POLLRDNORM) {
+        if (pollev[0].revents == POLLIN) {
             connfd = accept(listenfd, NULL, NULL);
             if (connfd == INVALID_SOCKET) {
                 print_error("Accept failed");
@@ -47,7 +51,7 @@ void poll_loop(SOCKET listenfd, server_callback svrcbk) {
 
             alloc_io_context((void *)(long)connfd);
 
-            pollev[i].events = POLLRDNORM;
+            pollev[i].events = POLLIN;
             if (i > maxi) {
                 maxi = i;
             }
@@ -63,16 +67,16 @@ void poll_loop(SOCKET listenfd, server_callback svrcbk) {
                 continue;
             }
             io_context = get_io_context((void *)(long)(connfd));
-            if (pollev[i].revents & POLLRDNORM || pollev[i].revents & POLLWRNORM || pollev[i].revents & POLLHUP) {
+            if (pollev[i].revents & POLLIN || pollev[i].revents & POLLOUT || pollev[i].revents & POLLHUP) {
                 svrcbk(io_context);
                 if (get_last_error() != IO_EWOULDBLOCK) {
                     close_socket(connfd);
                     free_io_context(io_context->fd);
                     pollev[i].fd = INVALID_SOCKET;
                 } else if (io_context->sendagain) {
-                    pollev[i].events = POLLRDNORM | POLLWRNORM;
-                } else if (!io_context->sendagain && pollev[i].events & POLLWRNORM) {
-                    pollev[i].events = POLLRDNORM;
+                    pollev[i].events = POLLIN | POLLOUT;
+                } else if (!io_context->sendagain && pollev[i].events & POLLOUT) {
+                    pollev[i].events = POLLIN;
                 }
                 if (--ready_num <= 0) {
                     break;

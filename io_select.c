@@ -1,5 +1,9 @@
 #ifndef _WIN32
+#ifdef USE_OLD_LIBC
+#include <sys/time.h>
+#else
 #include <sys/select.h>
+#endif
 #endif
 #include "io_select.h"
 
