@@ -5,4 +5,4 @@ CFLAGS = -O2 -Wall -pipe -DUSE_LIBC5
 CXXFLAGS = ${CFLAGS} 
 LDFLAGS =
 THREADS = 0
-include ./makefile.unix
+include ./makefile.posix

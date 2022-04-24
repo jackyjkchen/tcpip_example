@@ -1,4 +1,4 @@
 TARGET = x86_64-pc-cygwin
 CC = ${TARGET}-gcc
 CXX = ${TARGET}-g++
-include ./makefile.unix
+include ./makefile.posix

@@ -3,8 +3,8 @@ all: common
 common:
 	+make -f makefile.common
 
-unix:
-	+make -f makefile.unix
+posix:
+	+make -f makefile.posix
 
 linux:
 	+make -f makefile.linux
