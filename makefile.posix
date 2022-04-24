@@ -1,5 +1,5 @@
 include ./makefile.common
-include ./makefile.thread
+include ./thread.mk
 
 CFLAGS = -O2 -Wall -pipe -D_XOPEN_SOURCE -pthread
 CXXFLAGS = ${CFLAGS}
