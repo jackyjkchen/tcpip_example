@@ -1,5 +1,5 @@
 #ifndef _WIN32
-#ifdef USE_OLD_LIBC
+#if defined USE_LIBC5 || defined USE_LIBC4
 #include <sys/time.h>
 #else
 #include <sys/select.h>

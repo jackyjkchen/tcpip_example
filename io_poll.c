@@ -1,4 +1,4 @@
-#ifdef USE_OLD_LIBC
+#if defined USE_LIBC5
 #include <sys/poll.h>
 #else
 #include <poll.h>

@@ -1,7 +1,7 @@
 TARGET = i586-legacy-linux-gnulibc1
 CC = ${TARGET}-gcc
 CXX = ${TARGET}-g++
-CFLAGS = -O2 -Wall -pipe -DUSE_OLD_LIBC
+CFLAGS = -O2 -Wall -pipe -DUSE_LIBC5
 CXXFLAGS = ${CFLAGS} 
 LDFLAGS =
 THREADS = 0

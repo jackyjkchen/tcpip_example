@@ -31,7 +31,7 @@ typedef int SOCKET;
 #define INVALID_SOCKET -1
 
 /* for old libc */
-#ifdef USE_OLD_LIBC
+#if defined USE_LIBC5 || defined USE_LIBC4
 typedef int socklen_t;
 #ifndef SHUT_RD
 #define SHUT_RD 0
