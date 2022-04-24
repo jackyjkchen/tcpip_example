@@ -1,10 +1,12 @@
+include ./makefile.common
+include ./makefile.thread
+
 TARGET = x86_64-w64-mingw32
 CC = ${TARGET}-gcc
 CXX = ${TARGET}-g++
 CFLAGS = -O2 -Wall -pipe
 CXXFLAGS = ${CFLAGS} 
-LDFLAGS = -lws2_32
-include ./makefile.common
+LDFLAGS = -Wl,--as-needed -lws2_32
 
 progs = server_WSAEventSelect_nonblock server_WSAPoll_nonblock
 

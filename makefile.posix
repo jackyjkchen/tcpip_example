@@ -1,8 +1,10 @@
-CFLAGS ?= -O2 -Wall -pipe -D_XOPEN_SOURCE -pthread
-CXXFLAGS ?= ${CFLAGS}
 include ./makefile.common
+include ./makefile.thread
 
-progs = server_select_nonblock server_poll_nonblock
+CFLAGS = -O2 -Wall -pipe -D_XOPEN_SOURCE -pthread
+CXXFLAGS = ${CFLAGS}
+
+progs = server_poll_nonblock
 
 all: ${progs}
 
