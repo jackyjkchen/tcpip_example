@@ -11,9 +11,9 @@ struct THREADPOOL_CTX {
 
 typedef void (*thrd_callback)(void *param);
 
-extern int threadpool_init(struct THREADPOOL_CTX *ctx, int max_thrd_num);
+extern int threadpool_startup(struct THREADPOOL_CTX *ctx, int max_thrd_num);
 
-extern void threadpool_clean(struct THREADPOOL_CTX *ctx);
+extern void threadpool_cleanup(struct THREADPOOL_CTX *ctx);
 
 extern void threadpool_addtask(struct THREADPOOL_CTX *ctx, thrd_callback func, void *param);
 

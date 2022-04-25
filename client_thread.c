@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    if (threadpool_init(&thrd_ctx, 0) != 0) {
+    if (threadpool_startup(&thrd_ctx, 0) != 0) {
         print_error("threadpool_init failed");
         return -1;
     }
@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
     }
 
     threadpool_waitallthrd(&thrd_ctx);
-    threadpool_clean(&thrd_ctx);
+    threadpool_cleanup(&thrd_ctx);
 
     return 0;
 }

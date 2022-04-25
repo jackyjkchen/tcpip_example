@@ -1,7 +1,7 @@
 #include "thread_pool_c.h"
 #include "thread_pool.h"
 
-int threadpool_init(struct THREADPOOL_CTX *ctx, int max_thrd_num) {
+int threadpool_startup(struct THREADPOOL_CTX *ctx, int max_thrd_num) {
     int ret = 0;
     ThreadPool *pool = new ThreadPool(max_thrd_num);
     if (pool != NULL) {
@@ -19,7 +19,7 @@ int threadpool_init(struct THREADPOOL_CTX *ctx, int max_thrd_num) {
     return ret;
 }
 
-void threadpool_clean(struct THREADPOOL_CTX *ctx) {
+void threadpool_cleanup(struct THREADPOOL_CTX *ctx) {
     ThreadPool *pool = (ThreadPool *)ctx->ctx;
     delete pool;
     ctx->ctx = NULL;
