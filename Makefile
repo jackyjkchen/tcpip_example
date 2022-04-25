@@ -21,5 +21,8 @@ cygwin:
 libc5:
 	+make -f makefile.libc5
 
+libc4:
+	+make -f makefile.libc4
+
 clean: 
 	+make -f makefile.common clean
