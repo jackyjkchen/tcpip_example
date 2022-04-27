@@ -6,3 +6,12 @@ CXX = ${TARGET}-g++
 CFLAGS = -O2 -Wall -pipe -DUSE_LIBC4
 CXXFLAGS = ${CFLAGS}
 LDFLAGS = -lm
+
+progs = server_poll_nonblock
+
+all: ${progs}
+
+io_poll.o: io_poll.c io_poll.h
+
+server_poll_nonblock: server_poll_nonblock.o io_poll.o io_server.o io_context.o io_common.o
+	${CXX} ${CXXFLAGS} server_poll_nonblock.o io_poll.o io_server.o io_context.o io_common.o -lpoll ${LDFLAGS} -o $@.exe
