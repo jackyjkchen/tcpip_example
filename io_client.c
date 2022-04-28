@@ -63,7 +63,7 @@ void reflect_client_callback(void *param) {
             break;
         }
 
-        if (connect(connfd, (const struct sockaddr *)pserver_addr, sizeof(struct sockaddr_in)) != 0) {
+        if (connect(connfd, (struct sockaddr *)pserver_addr, sizeof(struct sockaddr_in)) != 0) {
             print_error("Connect failed");
             break;
         }

@@ -42,7 +42,7 @@ int server_socket_init(int protocol, int nonblock) {
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     server_addr.sin_port = htons(protocol == TCP ? TCP_SERV_PORT : UDP_SERV_PORT);
 
-    if (bind(listenfd, (const struct sockaddr *)&server_addr, sizeof(server_addr)) != 0) {
+    if (bind(listenfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) != 0) {
         print_error("Bind server_addr failed");
         close_socket(listenfd);
         return -1;
