@@ -1,0 +1,4 @@
+include ./makefile.common
+
+CFLAGS = -O2 -Wall -pipe -DOLD_BSD
+CXXFLAGS = ${CFLAGS}

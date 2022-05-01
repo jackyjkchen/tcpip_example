@@ -2,6 +2,8 @@
 #if defined USE_LIBC5 || defined USE_LIBC4
 #include <sys/time.h>
 #else
+#include <sys/types.h>
+#include <sys/time.h>
 #include <sys/select.h>
 #endif
 #endif

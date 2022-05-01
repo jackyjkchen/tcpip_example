@@ -31,7 +31,7 @@ typedef int SOCKET;
 #define INVALID_SOCKET -1
 
 /* for old libc */
-#if defined USE_LIBC5 || defined USE_LIBC4
+#if defined(USE_LIBC5) || defined(USE_LIBC4) || defined(OLD_BSD)
 typedef int socklen_t;
 #ifndef SHUT_RD
 #define SHUT_RD 0
@@ -39,11 +39,11 @@ typedef int socklen_t;
 #ifndef SHUT_WR
 #define SHUT_WR 1
 #endif
+#endif /*USE_OLD_LIBC*/
+
 #ifndef MSG_NOSIGNAL
 #define MSG_NOSIGNAL 0x4000
 #endif
-#endif /*USE_OLD_LIBC*/
-
 #define IO_SHUT_RD SHUT_RD
 #define IO_SHUT_WR SHUT_WR
 #define IO_EWOULDBLOCK EWOULDBLOCK

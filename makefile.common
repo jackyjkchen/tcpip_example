@@ -2,7 +2,7 @@ CC = gcc
 CXX = g++
 CFLAGS = -O2 -Wall -pipe
 CXXFLAGS = ${CFLAGS}
-LDFLAGS = -Wl,--as-needed
+LDFLAGS =
 
 progs = client_loop client_udp server_select_nonblock server_accept_block server_udp_block
 

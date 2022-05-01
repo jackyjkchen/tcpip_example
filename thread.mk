@@ -1,6 +1,6 @@
 CFLAGS = -O2 -Wall -pipe -pthread
 CXXFLAGS = ${CFLAGS}
-LDFLAGS = -Wl,--as-needed
+LDFLAGS =
 
 progs = client_thread
 
