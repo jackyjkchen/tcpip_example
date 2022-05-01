@@ -14,6 +14,7 @@ void poll_loop(SOCKET listenfd, server_callback svrcbk) {
     pollev[0].revents = 0;
     for (i = 1; i < MAX_CONN; ++i) {
         pollev[i].fd = INVALID_SOCKET;
+        pollev[i].events = 0;
         pollev[i].revents = 0;
     }
 
