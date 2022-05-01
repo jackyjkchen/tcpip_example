@@ -11,8 +11,10 @@ void poll_loop(SOCKET listenfd, server_callback svrcbk) {
 
     pollev[0].fd = listenfd;
     pollev[0].events = POLLIN;
+    pollev[0].revents = 0;
     for (i = 1; i < MAX_CONN; ++i) {
         pollev[i].fd = INVALID_SOCKET;
+        pollev[i].revents = 0;
     }
 
     while (1) {
@@ -52,6 +54,7 @@ void poll_loop(SOCKET listenfd, server_callback svrcbk) {
             alloc_io_context((void *)(long)connfd);
 
             pollev[i].events = POLLIN;
+            pollev[i].revents = 0;
             if (i > maxi) {
                 maxi = i;
             }

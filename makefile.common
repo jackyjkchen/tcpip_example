@@ -1,5 +1,5 @@
-CC = cc
-CXX = c++
+CC = gcc
+CXX = g++
 CFLAGS = -O2 -Wall -pipe
 CXXFLAGS = ${CFLAGS}
 LDFLAGS = -Wl,--as-needed
@@ -19,6 +19,7 @@ io_select.o: io_select.c io_select.h
 io_accept.o: io_accept.c io_accept.h
 
 io_context.o: io_context.cpp io_context.h
+	${CXX} ${CXXFLAGS} -c -o $@ io_context.cpp
 
 client_loop: client_loop.o io_client.o io_common.o
 	${CC} ${CFLAGS} client_loop.o io_client.o io_common.o ${LDFLAGS} -o $@.exe

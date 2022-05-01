@@ -18,6 +18,9 @@ mingw:
 cygwin:
 	+make -f makefile.cygwin
 
+solaris:
+	+make -f makefile.solaris
+
 libc5:
 	+make -f makefile.libc5
 
