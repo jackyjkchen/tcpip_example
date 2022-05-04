@@ -1,5 +1,8 @@
 include ./makefile.posix
 
+CC = cc
+CXX = c++
+
 progs = server_kqueue_nonblock
 
 all: ${progs}

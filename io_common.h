@@ -42,7 +42,11 @@ typedef int socklen_t;
 #endif /*USE_OLD_LIBC*/
 
 #ifndef MSG_NOSIGNAL
+#if __minix__
+#define MSG_NOSIGNAL 0
+#else
 #define MSG_NOSIGNAL 0x4000
+#endif
 #endif
 #define IO_SHUT_RD SHUT_RD
 #define IO_SHUT_WR SHUT_WR
