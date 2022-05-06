@@ -3,3 +3,6 @@ include ./makefile.posix
 TARGET = x86_64-pc-cygwin
 CC = ${TARGET}-gcc
 CXX = ${TARGET}-g++
+CFLAGS = -O2 -Wall -pipe -D_XOPEN_SOURCE -D_REENTRANT
+CXXFLAGS = ${CFLAGS}
+LDFLAGS = -lpthread
