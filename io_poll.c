@@ -1,9 +1,9 @@
-#if defined USE_LIBC5 || defined USE_LIBC4
+#include "io_poll.h"
+#if __GNU_LIBRARY__ == 1
 #include <sys/poll.h>
 #else
 #include <poll.h>
 #endif
-#include "io_poll.h"
 
 void poll_loop(SOCKET listenfd, server_callback svrcbk) {
     int i = 0, maxi = 0;

@@ -22,7 +22,7 @@ int client_socket_init(const char *straddr, const unsigned short port, struct so
     pserver_addr->sin_addr.s_addr = inet_addr(straddr);
     if (pserver_addr->sin_addr.s_addr == INADDR_NONE || pserver_addr->sin_addr.s_addr == INADDR_ANY) {
 #else
-#if defined USE_LIBC5 || defined USE_LIBC4
+#if __GNU_LIBRARY__ == 1
     if (inet_aton(straddr, &pserver_addr->sin_addr) == 0) {
 #else
     if (inet_pton(AF_INET, straddr, &pserver_addr->sin_addr) < 0) {

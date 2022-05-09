@@ -31,7 +31,7 @@ typedef int SOCKET;
 #define INVALID_SOCKET -1
 
 /* for old libc */
-#if defined(USE_LIBC5) || defined(USE_LIBC4) || defined(OLD_BSD)
+#if __GNU_LIBRARY__ == 1 || defined(OLD_BSD)
 typedef int socklen_t;
 #ifndef SHUT_RD
 #define SHUT_RD 0
