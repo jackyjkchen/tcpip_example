@@ -7,4 +7,4 @@ all: ${progs}
 io_epoll.o: io_epoll.c io_epoll.h
 
 server_epoll_nonblock: server_epoll_nonblock.o io_epoll.o io_server.o io_context.o io_common.o
-	${CXX} ${CXXFLAGS} server_epoll_nonblock.o io_epoll.o io_server.o io_context.o io_common.o ${LDFLAGS} -o $@.exe
+	${CXX} ${CXXFLAGS} $^ ${LDFLAGS} -o $@.exe

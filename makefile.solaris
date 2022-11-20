@@ -10,4 +10,4 @@ all: ${progs}
 io_devpoll.o: io_devpoll.c io_devpoll.h
 
 server_devpoll_nonblock: server_devpoll_nonblock.o io_devpoll.o io_server.o io_context.o io_common.o
-	${CXX} ${CXXFLAGS} server_devpoll_nonblock.o io_devpoll.o io_server.o io_common.o io_context.o ${LDFLAGS} -o $@.exe
+	${CXX} ${CXXFLAGS} $^ ${LDFLAGS} -o $@.exe

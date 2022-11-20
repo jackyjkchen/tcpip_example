@@ -11,4 +11,4 @@ all: ${progs}
 io_poll.o: io_poll.c io_poll.h
 
 server_poll_nonblock: server_poll_nonblock.o io_poll.o io_server.o io_context.o io_common.o
-	${CXX} ${CXXFLAGS} server_poll_nonblock.o io_poll.o io_server.o io_context.o io_common.o ${LDFLAGS} -o $@.exe
+	${CXX} ${CXXFLAGS} $^ ${LDFLAGS} -o $@.exe
