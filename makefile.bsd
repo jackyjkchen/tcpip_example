@@ -9,5 +9,5 @@ all: ${progs}
 
 io_kqueue.o: io_kqueue.c io_kqueue.h
 
-server_kqueue_nonblock: server_kqueue_nonblock.o io_kqueue.o io_server.o io_context.o io_common.o
-	${CXX} ${CXXFLAGS} $^ ${LDFLAGS} -o $@.exe
+server_kqueue_nonblock: server_kqueue_nonblock.o io_kqueue.o io_server.o io_context.o io_common.o cmap.o
+	${CC} ${CXXFLAGS} $^ ${LDFLAGS} -o $@.exe

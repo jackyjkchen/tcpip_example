@@ -8,6 +8,8 @@ progs = client_loop client_udp server_select_nonblock server_accept_block server
 
 all: ${progs}
 
+cmap.o: cmap.c cmap.h
+
 io_common.o: io_common.c io_common.h
 
 io_client.o: io_client.c io_client.h
@@ -18,8 +20,7 @@ io_select.o: io_select.c io_select.h
 
 io_accept.o: io_accept.c io_accept.h
 
-io_context.o: io_context.cpp io_context.h
-	${CXX} ${CXXFLAGS} -c -o $@ $<
+io_context.o: io_context.c io_context.h
 
 client_loop: client_loop.o io_client.o io_common.o
 	${CC} ${CFLAGS} $^ ${LDFLAGS} -o $@.exe
@@ -27,8 +28,8 @@ client_loop: client_loop.o io_client.o io_common.o
 client_udp: client_udp.o io_client.o io_common.o
 	${CC} ${CFLAGS} $^ ${LDFLAGS} -o $@.exe
 
-server_select_nonblock: server_select_nonblock.o io_select.o io_server.o io_context.o io_common.o
-	${CXX} ${CXXFLAGS} $^ ${LDFLAGS} -o $@.exe
+server_select_nonblock: server_select_nonblock.o io_select.o io_server.o io_context.o io_common.o cmap.o
+	${CC} ${CXXFLAGS} $^ ${LDFLAGS} -o $@.exe
 
 server_accept_block: server_accept_block.o io_accept.o io_server.o io_common.o
 	${CC} ${CFLAGS} $^ ${LDFLAGS} -o $@.exe

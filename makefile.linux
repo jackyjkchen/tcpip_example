@@ -6,5 +6,5 @@ all: ${progs}
 
 io_epoll.o: io_epoll.c io_epoll.h
 
-server_epoll_nonblock: server_epoll_nonblock.o io_epoll.o io_server.o io_context.o io_common.o
-	${CXX} ${CXXFLAGS} $^ ${LDFLAGS} -o $@.exe
+server_epoll_nonblock: server_epoll_nonblock.o io_epoll.o io_server.o io_context.o io_common.o cmap.o
+	${CC} ${CXXFLAGS} $^ ${LDFLAGS} -o $@.exe
