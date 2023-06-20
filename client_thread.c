@@ -28,12 +28,8 @@ int main(int argc, char **argv) {
     }
 
     for (i = 0; i < client_num; ++i) {
-        while (!threadpool_addtask(&thrd_ctx, reflect_client_callback, &server_addr)) {
-#ifdef _WIN32
-            Sleep(0);
-#else
-            sleep(0);
-#endif
+        if (!threadpool_addtask(&thrd_ctx, reflect_client_callback, &server_addr)) {
+            abort();
         }
     }
 
