@@ -27,6 +27,7 @@ int devpoll_loop(SOCKET listenfd, server_callback svrcbk) {
 
     while (1) {
         int ready_num = 0;
+
         dvpollev.dp_timeout = -1;
         dvpollev.dp_nfds = MAX_CONN;
         dvpollev.dp_fds = pollev;
@@ -62,7 +63,8 @@ int devpoll_loop(SOCKET listenfd, server_callback svrcbk) {
                     print_error("Write /dev/poll failed");
                     continue;
                 }
-            } else if (dvpollev.dp_fds[i].revents & POLLIN || dvpollev.dp_fds[i].revents & POLLOUT || dvpollev.dp_fds[i].revents & POLLHUP) {
+            } else if (dvpollev.dp_fds[i].revents & POLLIN || dvpollev.dp_fds[i].revents & POLLOUT
+                       || dvpollev.dp_fds[i].revents & POLLHUP) {
                 svrcbk(io_context);
                 if (get_last_error() != IO_EWOULDBLOCK) {
                     close_socket(dvpollev.dp_fds[i].fd);
