@@ -4,7 +4,7 @@ CFLAGS = -O2 -Wall -pipe
 CXXFLAGS = ${CFLAGS}
 LDFLAGS =
 
-progs = client_loop.exe client_udp.exe server_select_nonblock.exe server_accept_block.exe server_udp_block.exe
+progs = client_loop$(EXT) client_udp$(EXT) server_select_nonblock$(EXT) server_accept_block$(EXT) server_udp_block$(EXT)
 
 all: ${progs}
 
@@ -22,20 +22,20 @@ io_accept.o: io_accept.c io_accept.h
 
 io_context.o: io_context.c io_context.h
 
-client_loop.exe: client_loop.o io_client.o io_common.o
+client_loop$(EXT): client_loop.o io_client.o io_common.o
 	${CC} ${CFLAGS} $^ ${LDFLAGS} -o $@
 
-client_udp.exe: client_udp.o io_client.o io_common.o
+client_udp$(EXT): client_udp.o io_client.o io_common.o
 	${CC} ${CFLAGS} $^ ${LDFLAGS} -o $@
 
-server_select_nonblock.exe: server_select_nonblock.o io_select.o io_server.o io_context.o io_common.o cmap.o
+server_select_nonblock$(EXT): server_select_nonblock.o io_select.o io_server.o io_context.o io_common.o cmap.o
 	${CC} ${CFLAGS} $^ ${LDFLAGS} -o $@
 
-server_accept_block.exe: server_accept_block.o io_accept.o io_server.o io_common.o
+server_accept_block$(EXT): server_accept_block.o io_accept.o io_server.o io_common.o
 	${CC} ${CFLAGS} $^ ${LDFLAGS} -o $@
 
-server_udp_block.exe: server_udp_block.o io_server.o io_common.o
+server_udp_block$(EXT): server_udp_block.o io_server.o io_common.o
 	${CC} ${CFLAGS} $^ ${LDFLAGS} -o $@
 
 clean: 
-	rm -rf *.o *.exe
+	rm -rf *.o *.exe client_loop client_udp server_select_nonblock server_accept_block server_udp_block client_thread server_poll_nonblock server_epoll_nonblock server_kqueue_nonblock server_devpoll_nonblock

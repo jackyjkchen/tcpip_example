@@ -1,3 +1,4 @@
+EXT = .exe
 include ./makefile.common
 include ./thread.mk
 
@@ -9,9 +10,9 @@ CXXFLAGS = ${CFLAGS}
 LDFLAGS = -Wl,--as-needed -lws2_32
 WSAPOLL = 1
 
-progs = server_WSAEventSelect_nonblock.exe
+progs = server_WSAEventSelect_nonblock$(EXT)
 ifeq ($(WSAPOLL),1)
-progs += server_WSAPoll_nonblock.exe
+progs += server_WSAPoll_nonblock$(EXT)
 endif
 
 all: ${progs}
@@ -20,10 +21,10 @@ io_WSAEventSelect.o: io_WSAEventSelect.c io_WSAEventSelect.h
 
 io_WSAPoll.o: io_WSAPoll.c io_WSAPoll.h
 
-server_WSAEventSelect_nonblock.exe: server_WSAEventSelect_nonblock.o io_WSAEventSelect.o io_server.o io_context.o io_common.o cmap.o
+server_WSAEventSelect_nonblock$(EXT): server_WSAEventSelect_nonblock.o io_WSAEventSelect.o io_server.o io_context.o io_common.o cmap.o
 	${CC} ${CFLAGS} $^ ${LDFLAGS} -o $@
 
 ifeq ($(WSAPOLL),1)
-server_WSAPoll_nonblock.exe: server_WSAPoll_nonblock.o io_WSAPoll.o io_server.o io_context.o io_common.o cmap.o
+server_WSAPoll_nonblock$(EXT): server_WSAPoll_nonblock.o io_WSAPoll.o io_server.o io_context.o io_common.o cmap.o
 	${CC} ${CFLAGS} $^ ${LDFLAGS} -o $@
 endif

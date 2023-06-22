@@ -1,10 +1,10 @@
 include ./makefile.posix
 
-progs = server_epoll_nonblock.exe
+progs = server_epoll_nonblock$(EXT)
 
 all: ${progs}
 
 io_epoll.o: io_epoll.c io_epoll.h
 
-server_epoll_nonblock.exe: server_epoll_nonblock.o io_epoll.o io_server.o io_context.o io_common.o cmap.o
+server_epoll_nonblock$(EXT): server_epoll_nonblock.o io_epoll.o io_server.o io_context.o io_common.o cmap.o
 	${CC} ${CFLAGS} $^ ${LDFLAGS} -o $@

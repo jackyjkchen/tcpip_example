@@ -3,11 +3,11 @@ include ./makefile.posix
 CFLAGS = -O2 -Wall -pipe -pthread
 CXXFLAGS = ${CFLAGS}
 
-progs = server_devpoll_nonblock.exe
+progs = server_devpoll_nonblock$(EXT)
 
 all: ${progs}
 
 io_devpoll.o: io_devpoll.c io_devpoll.h
 
-server_devpoll_nonblock.exe: server_devpoll_nonblock.o io_devpoll.o io_server.o io_context.o io_common.o cmap.o
+server_devpoll_nonblock$(EXT): server_devpoll_nonblock.o io_devpoll.o io_server.o io_context.o io_common.o cmap.o
 	${CC} ${CFLAGS} $^ ${LDFLAGS} -o $@
