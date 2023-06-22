@@ -1,14 +1,14 @@
 include ./makefile.common
 include ./thread.mk
 
-CFLAGS = -O2 -Wall -pipe -D_XOPEN_SOURCE -pthread
+CFLAGS = -O2 -Wall -pipe -D_XOPEN_SOURCE
 CXXFLAGS = ${CFLAGS}
 
-progs = server_poll_nonblock
+progs = server_poll_nonblock.exe
 
 all: ${progs}
 
 io_poll.o: io_poll.c io_poll.h
 
-server_poll_nonblock: server_poll_nonblock.o io_poll.o io_server.o io_context.o io_common.o cmap.o
-	${CC} ${CXXFLAGS} $^ ${LDFLAGS} -o $@.exe
+server_poll_nonblock.exe: server_poll_nonblock.o io_poll.o io_server.o io_context.o io_common.o cmap.o
+	${CC} ${CFLAGS} $^ ${LDFLAGS} -o $@

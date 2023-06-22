@@ -5,11 +5,11 @@ CC = ${TARGET}-gcc
 CXX = ${TARGET}-g++
 LDFLAGS = -lm
 
-progs = server_poll_nonblock
+progs = server_poll_nonblock.exe
 
 all: ${progs}
 
 io_poll.o: io_poll.c io_poll.h
 
-server_poll_nonblock: server_poll_nonblock.o io_poll.o io_server.o io_context.o io_common.o cmap.o
-	${CC} ${CXXFLAGS} $^ -lpoll ${LDFLAGS} -o $@.exe
+server_poll_nonblock.exe: server_poll_nonblock.o io_poll.o io_server.o io_context.o io_common.o cmap.o
+	${CC} ${CFLAGS} $^ -lpoll ${LDFLAGS} -o $@

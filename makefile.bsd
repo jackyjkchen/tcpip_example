@@ -3,11 +3,11 @@ include ./makefile.posix
 CC = cc
 CXX = c++
 
-progs = server_kqueue_nonblock
+progs = server_kqueue_nonblock.exe
 
 all: ${progs}
 
 io_kqueue.o: io_kqueue.c io_kqueue.h
 
-server_kqueue_nonblock: server_kqueue_nonblock.o io_kqueue.o io_server.o io_context.o io_common.o cmap.o
-	${CC} ${CXXFLAGS} $^ ${LDFLAGS} -o $@.exe
+server_kqueue_nonblock.exe: server_kqueue_nonblock.o io_kqueue.o io_server.o io_context.o io_common.o cmap.o
+	${CC} ${CFLAGS} $^ ${LDFLAGS} -o $@
