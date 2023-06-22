@@ -2,7 +2,6 @@ include ./makefile.common
 
 TARGET = i586-legacy-linux-gnulibc1
 CC = ${TARGET}-gcc
-CXX = ${TARGET}-g++
 
 progs = server_poll_nonblock$(EXT)
 

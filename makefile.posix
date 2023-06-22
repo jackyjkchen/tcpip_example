@@ -2,7 +2,6 @@ include ./makefile.common
 include ./thread.mk
 
 CFLAGS = -O2 -Wall -pipe -D_XOPEN_SOURCE
-CXXFLAGS = ${CFLAGS}
 
 progs = server_poll_nonblock$(EXT)
 

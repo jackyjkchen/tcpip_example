@@ -10,3 +10,13 @@
 *.so
 *.core
 core
+client_loop
+client_udp
+server_select_nonblock
+server_accept_block
+server_udp_block
+client_thread
+server_poll_nonblock
+server_epoll_nonblock
+server_kqueue_nonblock
+server_devpoll_nonblock

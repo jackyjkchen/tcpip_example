@@ -1,8 +1,6 @@
 CC = gcc
-CXX = g++
 CFLAGS = -O2 -Wall -pipe
-CXXFLAGS = ${CFLAGS}
-LDFLAGS =
+LDFLAGS = -s
 
 progs = client_loop$(EXT) client_udp$(EXT) server_select_nonblock$(EXT) server_accept_block$(EXT) server_udp_block$(EXT)
 

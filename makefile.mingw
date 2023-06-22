@@ -4,10 +4,8 @@ include ./thread.mk
 
 TARGET = x86_64-w64-mingw32
 CC = ${TARGET}-gcc
-CXX = ${TARGET}-g++
 CFLAGS = -O2 -Wall -pipe
-CXXFLAGS = ${CFLAGS} 
-LDFLAGS = -Wl,--as-needed -lws2_32
+LDFLAGS = -Wl,--as-needed -lws2_32 -s
 WSAPOLL = 1
 
 progs = server_WSAEventSelect_nonblock$(EXT)

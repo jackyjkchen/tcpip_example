@@ -2,8 +2,6 @@ include ./makefile.common
 
 TARGET = i486-legacy-linuxaout
 CC = ${TARGET}-gcc
-CXX = ${TARGET}-g++
-LDFLAGS = -lm
 
 progs = server_poll_nonblock$(EXT)
 
