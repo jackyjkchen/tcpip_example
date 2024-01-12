@@ -1,6 +1,5 @@
 EXT = .exe
 include ./makefile.common
-include ./thread.mk
 
 TARGET = x86_64-w64-mingw32
 CC = ${TARGET}-gcc
@@ -18,6 +17,13 @@ all: ${progs}
 io_WSAEventSelect.o: io_WSAEventSelect.c io_WSAEventSelect.h
 
 io_WSAPoll.o: io_WSAPoll.c io_WSAPoll.h
+
+queue.o: deque.o deque.h
+
+thread_pool_c.o: thread_pool_c.c thread_pool_c.h
+
+client_thread$(EXT): client_thread.o io_client.o io_common.o thread_pool_c.o deque.o
+	${CC} ${CFLAGS} $^ ${LDFLAGS} -o $@
 
 server_WSAEventSelect_nonblock$(EXT): server_WSAEventSelect_nonblock.o io_WSAEventSelect.o io_server.o io_context.o io_common.o cmap.o
 	${CC} ${CFLAGS} $^ ${LDFLAGS} -o $@

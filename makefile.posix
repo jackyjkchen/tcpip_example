@@ -1,13 +1,20 @@
 include ./makefile.common
-include ./thread.mk
 
 CFLAGS = -O2 -Wall -pipe -D_XOPEN_SOURCE
 
-progs = server_poll_nonblock$(EXT)
+progs = server_poll_nonblock$(EXT) client_thread$(EXT)
 
 all: ${progs}
 
 io_poll.o: io_poll.c io_poll.h
+
+queue.o: deque.o deque.h
+
+thread_pool_c.o: thread_pool_c.c thread_pool_c.h
+	${CC} ${CFLAGS} -pthread $< -c -o $@
+
+client_thread$(EXT): client_thread.o io_client.o io_common.o thread_pool_c.o deque.o
+	${CC} ${CFLAGS} -pthread $^ ${LDFLAGS} -o $@
 
 server_poll_nonblock$(EXT): server_poll_nonblock.o io_poll.o io_server.o io_context.o io_common.o cmap.o
 	${CC} ${CFLAGS} $^ ${LDFLAGS} -o $@
