@@ -1,6 +1,6 @@
 #include "io_WSAEventSelect.h"
 
-int main(int argc, char **argv) {
+int main() {
     SOCKET listenfd;
     int ret;
 

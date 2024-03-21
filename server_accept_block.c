@@ -1,6 +1,6 @@
 #include "io_accept.h"
 
-int main(int argc, char **argv) {
+int main() {
     SOCKET listenfd, ret = 0;
 
     listenfd = server_socket_init(TCP, 0);

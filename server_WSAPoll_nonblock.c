@@ -1,6 +1,6 @@
 #include "io_WSAPoll.h"
 
-int main(int argc, char **argv) {
+int main() {
     SOCKET listenfd;
 
     listenfd = server_socket_init(TCP, 1);

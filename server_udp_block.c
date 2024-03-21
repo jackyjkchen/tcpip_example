@@ -1,6 +1,6 @@
 #include "io_server.h"
 
-int main(int argc, char **argv) {
+int main() {
     SOCKET fd;
     char buf[UDP_BUF_SIZE] = { 0 };
 
